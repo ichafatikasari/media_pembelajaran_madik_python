@@ -1,0 +1,3328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Subway Quiz - Game Pembelajaran Teori Python SMA Kelas 10</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts: Press Start 2P, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            retro: ['"Press Start 2P"', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-modal {
+      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-amber-100 via-orange-50 to-amber-100 text-slate-900 font-sans min-h-screen flex flex-col antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- TOP HEADER / CONTROL BAR -->
+  <header class="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 border-b-4 border-amber-600 text-white shadow-xl sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Branding -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white text-orange-600 flex items-center justify-center font-black text-xl shadow-md border-2 border-amber-300 select-none">
+          🚇
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base md:text-lg font-black font-retro tracking-wide text-white drop-shadow">
+              PYTHON SUBWAY QUIZ
+            </h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 rounded-full bg-amber-950/60 text-amber-200 text-[10px] font-bold uppercase tracking-wider border border-amber-300/30">
+              SMA Kelas 10
+            </span>
+          </div>
+          <p class="text-xs text-amber-100 hidden md:block">
+            Subway Surfers Teori Python • Dual Kontrol Laptop & Smartboard • Lari Santai 15-20 Detik
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" onclick="openLeaderboardModal()" class="px-3.5 py-2 bg-yellow-400 hover:bg-yellow-300 text-amber-950 font-bold text-xs sm:text-sm rounded-xl shadow-md border-2 border-yellow-200 flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer">
+          <span>🏆 Papan Peringkat</span>
+        </button>
+
+        <button type="button" onclick="openCheatSheetModal()" class="px-3.5 py-2 bg-black/25 hover:bg-black/35 text-white font-bold text-xs sm:text-sm rounded-xl border border-white/30 flex items-center gap-1.5 transition-colors cursor-pointer">
+          <span>📖 Materi Teori</span>
+        </button>
+
+        <button type="button" onclick="openQuestionBankModal()" class="px-3.5 py-2 bg-black/25 hover:bg-black/35 text-white font-bold text-xs sm:text-sm rounded-xl border border-white/30 flex items-center gap-1.5 transition-colors cursor-pointer" title="Lihat 37 Bank Soal Lengkap">
+          <span>📚 Bank Soal (37)</span>
+        </button>
+
+        <button type="button" onclick="toggleAudioSound()" id="soundToggleBtn" class="p-2 rounded-xl bg-black/25 hover:bg-black/35 text-white border border-white/30 transition-colors cursor-pointer" title="Nyalakan/Matikan Suara">
+          🔊
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col gap-5 w-full">
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: MANUAL NAME INPUT SCREEN (SEBELUM BERMAIN) -->
+    <!-- ============================================================== -->
+    <div id="viewNameInput" class="w-full max-w-3xl mx-auto space-y-6 my-auto py-6 animate-modal">
+      <div class="bg-white rounded-3xl p-6 sm:p-10 border-4 border-amber-400 shadow-2xl space-y-6 text-center">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-800 font-bold text-xs uppercase tracking-wider border border-orange-200 shadow-sm">
+            <span>✨ Giliran Siswa Baru Maju ke Depan Kelas</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
+            Ketik Nama Kamu untuk Mulai Lari!
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base max-w-xl mx-auto">
+            Nikmati berlari santai 15–20 detik mengumpulkan koin emas Python, hindari rintangan rel, lalu capai gerbang soal untuk membuka <strong>1 soal teori Python</strong>!
+          </p>
+        </div>
+
+        <!-- Student Name Input Form -->
+        <form onsubmit="handleStartTurnForm(event)" class="space-y-4 max-w-lg mx-auto">
+          <div class="space-y-1.5 text-left">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <span>👤 Nama Siswa yang Maju:</span>
+            </label>
+            <input
+              type="text"
+              id="studentNameInput"
+              required
+              autofocus
+              placeholder="Ketik nama panggilan kamu di sini..."
+              class="w-full px-5 py-4 text-lg sm:text-xl font-bold bg-amber-50/50 border-4 border-amber-400 rounded-2xl focus:border-orange-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all text-slate-900 placeholder:text-slate-400 shadow-inner"
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full py-4 sm:py-5 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 text-white font-black font-retro text-sm sm:text-base shadow-xl border-4 border-orange-600 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
+          >
+            <span>🏃‍♂️ MULAI LARI SEKARANG!</span>
+          </button>
+        </form>
+
+        <!-- Quick Teacher / Student Reference Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
+          <button
+            type="button"
+            onclick="openCheatSheetModal()"
+            class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded-xl border border-amber-300 font-bold text-xs flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-xs"
+          >
+            <span>📖 Ringkasan Materi Teori</span>
+          </button>
+          <button
+            type="button"
+            onclick="openQuestionBankModal()"
+            class="px-4 py-2 bg-cyan-100 hover:bg-cyan-200 text-cyan-950 rounded-xl border border-cyan-300 font-bold text-xs flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer shadow-xs"
+          >
+            <span>📚 Bank Soal (37 Soal & Kunci)</span>
+          </button>
+        </div>
+
+        <!-- 3 Steps Classroom Guide -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left pt-2">
+          <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl text-xs">
+            <div class="font-black text-amber-900 flex items-center gap-1.5 mb-1">
+              <span>👤 1. Input Nama</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-tight">
+              Ketik nama panggilanmu di Smartboard atau laptop guru untuk memulai.
+            </p>
+          </div>
+
+          <div class="bg-orange-50 border border-orange-200 p-3.5 rounded-2xl text-xs">
+            <div class="font-black text-orange-900 flex items-center gap-1.5 mb-1">
+              <span>🏃‍♂️ 2. Lari & Lompat</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-tight">
+              Gunakan tombol Kiri, Kanan, dan Lompat untuk menghindari kereta dan pagar!
+            </p>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl text-xs">
+            <div class="font-black text-emerald-900 flex items-center gap-1.5 mb-1">
+              <span>🎯 3. Jawab 1 Soal</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-tight">
+              Tabrak rintangan atau gerbang soal untuk membuka 1 soal kuis teori Python!
+            </p>
+          </div>
+        </div>
+
+        <!-- Session Status & Safe Reset -->
+        <div class="flex flex-col gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Siswa yang sudah bermain di sesi ini: <strong id="sessionCounterText" class="text-slate-900 font-bold text-sm">0 Siswa</strong></span>
+            </div>
+
+            <button
+              type="button"
+              onclick="toggleResetSessionPrompt(true)"
+              class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl border border-amber-300 font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs"
+              title="Reset penghitung giliran siswa tanpa menghapus data papan peringkat"
+            >
+              <span>🔄 Reset Sesi Giliran</span>
+            </button>
+          </div>
+
+          <!-- Inline Confirmation Box (Bebas window.confirm, 100% responsif di Smartboard & Laptop) -->
+          <div id="resetSessionInlinePrompt" class="hidden p-4 bg-amber-50 border-2 border-amber-400 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-fadeIn">
+            <div class="flex items-start gap-2.5 text-amber-950 font-bold">
+              <div class="w-8 h-8 rounded-xl bg-amber-200 text-amber-800 flex items-center justify-center shrink-0">
+                🔄
+              </div>
+              <div>
+                <div class="text-sm font-extrabold text-slate-900">Reset giliran sesi siswa ke 0?</div>
+                <p class="text-[11px] font-medium text-emerald-800 mt-0.5">
+                  ✓ CATATAN AMAN: Nilai di Papan Peringkat (Leaderboard) <strong>TETAP TERSIMPAN AMAN</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                type="button"
+                onclick="toggleResetSessionPrompt(false)"
+                class="flex-1 sm:flex-none py-2 px-3.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onclick="executeResetSession()"
+                class="flex-1 sm:flex-none py-2 px-4 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-extrabold rounded-xl shadow-md border border-orange-500 active:scale-95 cursor-pointer"
+              >
+                Ya, Reset ke 0
+              </button>
+            </div>
+          </div>
+
+          <!-- Toast Banner / Success Indicator with Undo -->
+          <div id="resetSuccessToast" class="hidden p-3 bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-bold text-xs rounded-2xl flex items-center justify-between gap-2 shadow-xs animate-fadeIn">
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-700 text-sm">✓</span>
+              <span id="resetSuccessToastText">Sesi giliran berhasil direset ke 0 Siswa! (Data Papan Peringkat tetap tersimpan aman)</span>
+            </div>
+            <button
+              type="button"
+              onclick="undoResetSession()"
+              id="btnUndoReset"
+              class="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold cursor-pointer transition-colors shrink-0 shadow-2xs"
+            >
+              Urungkan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: SUBWAY GAMEPLAY RUNNER SCREEN -->
+    <!-- ============================================================== -->
+    <div id="viewGameplay" class="hidden flex-col gap-3 w-full">
+      <!-- 3D Subway Canvas Frame -->
+      <div class="relative w-full overflow-hidden rounded-3xl border-4 border-amber-500 shadow-2xl bg-slate-950 select-none">
+        
+        <!-- Canvas Top HUD -->
+        <div class="absolute top-0 left-0 right-0 z-10 flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-black/85 backdrop-blur-md border-b-2 border-amber-500/60 text-white font-retro text-xs sm:text-sm">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-amber-400 text-xs sm:text-sm">SUBWAY PYTHON</span>
+          </div>
+
+          <div class="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white px-3.5 py-1.5 rounded-xl border border-amber-300 shadow">
+            <span class="text-amber-200 text-[10px] sm:text-xs">SISWA:</span>
+            <span id="canvasHudStudent" class="text-white font-black tracking-wide uppercase text-xs sm:text-sm truncate max-w-[140px] sm:max-w-[220px]">
+              SISWA
+            </span>
+          </div>
+
+          <!-- Stats: Coins, Distance & Interactive Progress Bar -->
+          <div class="flex items-center gap-3 text-xs">
+            <div class="flex items-center gap-1 text-yellow-300 bg-black/50 px-2.5 py-1 rounded-lg border border-yellow-500/30">
+              <span class="text-base">🪙</span>
+              <span id="canvasHudCoins" class="font-bold">0</span>
+            </div>
+
+            <div class="flex items-center gap-2 bg-black/50 px-3 py-1 rounded-lg border border-white/20">
+              <span class="text-slate-300 hidden md:inline">JARAK:</span>
+              <span class="text-white font-bold"><span id="canvasHudDist">0m</span><span class="text-slate-400 text-[10px]">/100m</span></span>
+              <div class="w-16 sm:w-24 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-amber-400/50">
+                <div 
+                  id="canvasHudProgressBar"
+                  class="h-full bg-gradient-to-r from-emerald-400 via-yellow-400 to-orange-500 transition-all duration-200"
+                  style="width: 0%;"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Speed Toggle Button in HUD -->
+            <button
+              id="canvasHudSpeedBtn"
+              type="button"
+              onclick="cycleSpeedPreset()"
+              class="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 font-sans font-black px-2.5 py-1 rounded-lg border border-yellow-200 shadow transition-all cursor-pointer select-none text-[10px] sm:text-xs"
+              title="Klik untuk ubah kecepatan lari (Santai / Cepat / Super Cepat)"
+            >
+              <span>⚙️</span>
+              <span id="canvasHudSpeedLabel">⚡ Cepat (Default)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Central Dynamic Action Banner -->
+        <div 
+          id="canvasPhaseBanner"
+          class="absolute top-14 left-1/2 -translate-x-1/2 z-10 px-4 py-1.5 rounded-full shadow-lg border-2 text-xs sm:text-sm font-bold flex items-center gap-2 pointer-events-none whitespace-nowrap bg-amber-500 border-amber-300 text-white transition-all duration-300"
+        >
+          <span>⚡ HINDARI KERETA & LOMPATI PAGAR! Kumpulkan Koin Emas!</span>
+        </div>
+
+        <!-- Arcade Countdown Overlay (3, 2, 1, GO!) -->
+        <div 
+          id="countdownOverlay" 
+          class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none select-none transition-all"
+        >
+          <!-- Student Announcement -->
+          <div class="mb-2 px-5 py-1.5 rounded-full bg-slate-900/90 border-2 border-amber-400 text-amber-300 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xl">
+            <span>🏃 SIAPKAN JARI! Giliran: <span id="countdownStudentName" class="text-white underline">SISWA</span></span>
+          </div>
+
+          <!-- Pulsating Glow + Giant Number -->
+          <div class="relative flex items-center justify-center my-1">
+            <div id="countdownGlow" class="absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full blur-2xl opacity-75 animate-ping bg-rose-500"></div>
+            <div 
+              id="countdownNumber" 
+              class="relative font-retro font-black tracking-wider transition-transform drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] text-6xl sm:text-8xl md:text-9xl text-rose-500 drop-shadow-[0_0_35px_rgba(244,63,94,0.95)]"
+            >
+              3
+            </div>
+          </div>
+
+          <!-- Instruction Tip -->
+          <div class="mt-2 px-4 py-1.5 rounded-xl bg-slate-900/85 border border-slate-700 text-slate-300 text-[11px] sm:text-xs text-center max-w-sm">
+            <span id="countdownHint">Panah Keyboard (Laptop) atau Sentuh Tombol Layar (Smartboard)</span>
+          </div>
+        </div>
+
+        <!-- Lane Indicator Tag -->
+        <div id="canvasLaneBadge" class="absolute bottom-3 left-4 z-10 px-3 py-1 bg-black/75 rounded-lg border border-white/20 text-white font-retro text-[10px] hidden sm:block">
+          JALUR: ● TENGAH
+        </div>
+
+        <!-- Main HTML5 Canvas (960x480, 16:8 aspect ratio) -->
+        <canvas id="subwayCanvas" width="960" height="480" class="w-full h-auto block aspect-[16/8] sm:aspect-[16/7.8] object-cover cursor-grab"></canvas>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIRTUAL SMARTBOARD & TOUCHSCREEN CONTROLLER BUTTONS -->
+      <!-- (Designed with HUGE, finger-friendly dimensions for classroom displays) -->
+      <!-- ============================================================== -->
+      <div class="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border-4 border-amber-400 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <!-- Left & Right Lane Switch Buttons -->
+        <div class="flex items-center gap-4 w-full md:w-auto justify-center">
+          <button
+            type="button"
+            onclick="movePlayerLeft()"
+            class="w-24 sm:w-28 h-18 sm:h-22 rounded-2xl flex flex-col items-center justify-center gap-1 font-black text-sm sm:text-base border-4 border-amber-500 bg-gradient-to-b from-amber-100 to-amber-200 text-amber-950 shadow-lg active:scale-95 active:bg-amber-300 hover:border-amber-600 transition-all cursor-pointer select-none"
+            title="Pindah ke Jalur Kiri"
+          >
+            <span class="text-2xl sm:text-3xl">◀</span>
+            <span class="font-retro text-[10px] sm:text-xs">KIRI</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="movePlayerRight()"
+            class="w-24 sm:w-28 h-18 sm:h-22 rounded-2xl flex flex-col items-center justify-center gap-1 font-black text-sm sm:text-base border-4 border-amber-500 bg-gradient-to-b from-amber-100 to-amber-200 text-amber-950 shadow-lg active:scale-95 active:bg-amber-300 hover:border-amber-600 transition-all cursor-pointer select-none"
+            title="Pindah ke Jalur Kanan"
+          >
+            <span class="text-2xl sm:text-3xl">▶</span>
+            <span class="font-retro text-[10px] sm:text-xs">KANAN</span>
+          </button>
+        </div>
+
+        <!-- Center: Dual Controls Helper Info -->
+        <div class="text-center text-xs font-semibold text-slate-700 bg-amber-50/80 px-4 py-2.5 rounded-2xl border border-amber-200 max-w-sm">
+          <div class="font-bold text-slate-900 flex items-center justify-center gap-1.5 mb-1">
+            <span>⚡ DUAL KONTROL: LAPTOP & SMARTBOARD</span>
+          </div>
+          <div class="text-[11px] text-slate-600 mb-2">
+            • <strong>Laptop:</strong> Panah Keyboard ◀ ▶ & ▲ / SPASI<br />
+            • <strong>Smartboard:</strong> Tap tombol besar di atas atau <em>Swipe</em> layar!
+          </div>
+
+          <!-- Speed Selector Pills on Smartboard -->
+          <div class="pt-1.5 border-t border-amber-200 flex items-center justify-center gap-1.5 flex-wrap">
+            <span class="text-[10px] text-slate-500 font-bold">⚙️ SPEED:</span>
+            <div id="speedPillsContainer" class="flex items-center gap-1.5 flex-wrap justify-center">
+              <!-- Dynamically populated or rendered -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Giant Jump Button -->
+        <div class="w-full md:w-auto flex justify-center">
+          <button
+            type="button"
+            onclick="playerJump()"
+            class="w-full md:w-56 h-18 sm:h-22 rounded-2xl flex items-center justify-center gap-3 font-black text-sm sm:text-base border-4 border-orange-600 bg-gradient-to-b from-orange-400 to-orange-500 text-white shadow-xl active:scale-95 active:bg-orange-600 hover:brightness-105 transition-all cursor-pointer select-none"
+            title="Lompat Melewati Rintangan"
+          >
+            <span class="text-2xl sm:text-3xl">▲</span>
+            <span class="font-retro text-xs sm:text-sm tracking-wider">LOMPAT!</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 1: QUESTION MODAL (1 SISWA = 1 SOAL TEORI PYTHON) -->
+  <!-- ============================================================== -->
+  <div id="questionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div class="bg-white rounded-3xl border-4 border-amber-400 shadow-2xl max-w-2xl w-full p-5 sm:p-8 space-y-5 animate-modal my-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-xs font-black uppercase tracking-wider border border-orange-200">
+            🚇 KUIS SUBWAY PYTHON
+          </span>
+          <span id="modalCategoryBadge" class="text-xs font-bold text-slate-500">
+            Teori Dasar
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 rounded-xl text-amber-900 font-bold text-xs border border-yellow-300">
+          <span>🪙 Koin:</span>
+          <span id="modalCoinsCollected">0</span>
+        </div>
+      </div>
+
+      <!-- Question Text -->
+      <div class="space-y-3">
+        <h3 id="modalQuestionText" class="text-lg sm:text-2xl font-black text-slate-900 leading-snug">
+          Pertanyaan Kuis
+        </h3>
+
+        <!-- Code Snippet Box (if any) -->
+        <div id="modalCodeSnippetBox" class="hidden p-3.5 bg-slate-950 text-emerald-400 rounded-2xl font-mono text-sm sm:text-base border-2 border-slate-800 overflow-x-auto shadow-inner">
+          <code id="modalCodeSnippetText">print("Halo")</code>
+        </div>
+      </div>
+
+      <!-- Multiple Choice Options (A, B, C, D) Large Touch Buttons -->
+      <div id="modalOptionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Feedback Result Box (Shows after answering) -->
+      <div id="modalFeedbackBox" class="hidden p-4 rounded-2xl border-2 space-y-2 animate-modal">
+        <div class="flex items-center justify-between">
+          <div id="modalFeedbackTitle" class="font-black text-base sm:text-lg flex items-center gap-2">
+            <!-- Correct / Wrong Banner -->
+          </div>
+          <div id="modalScoreEarned" class="font-retro text-xs sm:text-sm font-bold">
+            <!-- +100 SKOR -->
+          </div>
+        </div>
+        <p id="modalExplanationText" class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <!-- Explanation -->
+        </p>
+
+        <!-- Continue Button -->
+        <button
+          type="button"
+          onclick="handleNextStudentClick()"
+          class="w-full mt-3 py-3.5 px-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black font-retro text-xs sm:text-sm rounded-xl shadow-lg border-2 border-emerald-400 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+        >
+          SELESAI & LANJUT KE SISWA BERIKUTNYA ➔
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 2: PERSISTENT LEADERBOARD MODAL (LOCALSTORAGE SAFE) -->
+  <!-- ============================================================== -->
+  <div id="leaderboardModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div class="bg-white rounded-3xl border-4 border-yellow-400 shadow-2xl max-w-3xl w-full p-5 sm:p-8 space-y-5 animate-modal my-auto">
+      
+      <!-- Leaderboard Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-yellow-400 text-amber-950 flex items-center justify-center text-lg shadow">
+            🏆
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black text-slate-900 font-retro">
+              PAPAN PERINGKAT KELAS
+            </h3>
+            <p class="text-[11px] text-slate-500">
+              Tersimpan aman di browser • Skor = 100 Benar + Koin Emas
+            </p>
+          </div>
+        </div>
+
+        <button type="button" onclick="closeLeaderboardModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Action Bar: Export CSV & Safe Session Reset -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
+        <div class="text-slate-600">
+          Total Nilai Tercatat: <strong id="lbTotalCount" class="text-slate-900">0</strong> Siswa
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="downloadCSVLeaderboard()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl border border-emerald-400 flex items-center gap-1 transition-all cursor-pointer shadow-sm">
+            <span>📥 Ekspor CSV/Excel</span>
+          </button>
+
+          <button type="button" onclick="toggleClearLeaderboardPrompt(true)" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-300 transition-colors cursor-pointer" title="Hapus semua riwayat nilai">
+            🗑️ Hapus Papan Peringkat
+          </button>
+        </div>
+      </div>
+
+      <!-- Inline Clear Leaderboard Prompt (Bebas window.confirm) -->
+      <div id="clearLeaderboardPrompt" class="hidden p-3 bg-rose-50 border-2 border-rose-300 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-rose-900 font-bold animate-fadeIn">
+        <div class="flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>Yakin hapus seluruh data nilai leaderboard? Tindakan ini tidak bisa dibatalkan.</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" onclick="toggleClearLeaderboardPrompt(false)" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg cursor-pointer">Batal</button>
+          <button type="button" onclick="executeClearLeaderboard()" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg shadow cursor-pointer">Ya, Hapus Semua</button>
+        </div>
+      </div>
+
+      <!-- Leaderboard Table Container -->
+      <div class="max-h-[380px] overflow-y-auto rounded-2xl border border-slate-200 shadow-inner">
+        <table class="w-full text-left text-xs sm:text-sm border-collapse">
+          <thead class="bg-slate-100 sticky top-0 text-slate-700 font-bold border-b border-slate-200 uppercase text-[10px] sm:text-xs tracking-wider">
+            <tr>
+              <th class="p-3 text-center w-12">No</th>
+              <th class="p-3">Nama Siswa</th>
+              <th class="p-3 text-center">Koin</th>
+              <th class="p-3 text-center">Status</th>
+              <th class="p-3 text-right">Total Skor</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTableBody" class="divide-y divide-slate-100">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Close Button -->
+      <div class="pt-2 text-right">
+        <button type="button" onclick="closeLeaderboardModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm rounded-xl transition-colors cursor-pointer">
+          Tutup Papan Peringkat
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 3: RINGKASAN MATERI TEORI PYTHON KELAS 10 (4 TAB DETAIL) -->
+  <!-- ============================================================== -->
+  <div id="cheatSheetModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border-4 border-amber-500 overflow-hidden text-slate-800 flex flex-col max-h-[92vh] my-auto animate-modal">
+      
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 px-6 py-4 text-white flex items-center justify-between shrink-0 border-b-4 border-amber-600">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shadow">
+            📖
+          </div>
+          <div>
+            <h2 class="text-sm sm:text-base md:text-lg font-bold font-retro tracking-wide">
+              RINGKASAN TEORI PYTHON
+            </h2>
+            <p class="text-xs text-amber-100">
+              Materi Teori Dasar SMA Kelas 10 (Sesuai 100% dengan 37 Soal Bank Kuis)
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="closeCheatSheetModal()"
+          class="p-1.5 rounded-full hover:bg-black/20 text-white/80 hover:text-white transition-colors cursor-pointer"
+          title="Tutup Ringkasan Materi"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="px-4 sm:px-6 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap gap-2 shrink-0 items-center justify-between">
+        <div class="flex flex-wrap gap-2" id="csTabButtons">
+          <button
+            type="button"
+            onclick="switchCheatSheetTab('konsep')"
+            id="csTabBtn_konsep"
+            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer bg-orange-600 text-white shadow-md"
+          >
+            <span>💻 1. Dasar Coding (#1–#7)</span>
+          </button>
+          <button
+            type="button"
+            onclick="switchCheatSheetTab('print')"
+            id="csTabBtn_print"
+            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
+          >
+            <span>📢 2. Fungsi print() (#8–#16)</span>
+          </button>
+          <button
+            type="button"
+            onclick="switchCheatSheetTab('tipe_data')"
+            id="csTabBtn_tipe_data"
+            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
+          >
+            <span>🔤 3. Tipe Data (#17–#37)</span>
+          </button>
+          <button
+            type="button"
+            onclick="switchCheatSheetTab('kisi_kisi')"
+            id="csTabBtn_kisi_kisi"
+            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
+          >
+            <span>🗺️ 4. Peta Kisi-Kisi 37 Soal</span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onclick="closeCheatSheetModal(); openQuestionBankModal();"
+          class="px-3 py-1.5 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-amber-950 font-bold text-xs flex items-center gap-1.5 shadow-sm border border-yellow-300 transition-transform active:scale-95 cursor-pointer ml-auto"
+        >
+          <span>📚 Buka Bank Soal (37)</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 text-sm leading-relaxed">
+        
+        <!-- TAB 1: DASAR CODING -->
+        <div id="csTabContent_konsep" class="space-y-4">
+          <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-2xl">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+              <h3 class="font-bold text-orange-900 text-base flex items-center gap-2">
+                <span>💻 Pengertian Coding & Pemrograman</span>
+              </h3>
+              <span class="text-[10px] bg-orange-200 text-orange-950 font-bold px-2.5 py-0.5 rounded-full border border-orange-300">
+                Kunci Soal #1 & #2
+              </span>
+            </div>
+            <p class="text-slate-700 text-xs sm:text-sm">
+              <strong>Coding</strong> adalah kegiatan menulis deretan perintah atau instruksi terstruktur agar komputer dapat menjalankan tugas yang kita kehendaki. Manfaat utamanya adalah melatih <strong>logika berpikir teratur</strong> dan pemecahan masalah (problem solving).
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Variabel -->
+            <div class="p-4 bg-white border-2 border-orange-200 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-orange-950 text-sm flex items-center gap-1.5">
+                  <span>🏷️</span> Variabel & Tanda Sama Dengan ( = )
+                </h4>
+                <span class="text-[10px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full">Kunci Soal #3</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                Variabel adalah wadah penyimpanan data di memori. Pengisian nilai menggunakan operator <strong>tanda sama dengan ( = )</strong>.
+              </p>
+              <div class="p-2.5 rounded-xl bg-slate-900 text-amber-300 font-mono text-xs">
+                skor = 100 <span class="text-slate-400"># variabel skor diisi angka 100</span><br />
+                nama = "Budi" <span class="text-slate-400"># variabel nama diisi teks</span>
+              </div>
+            </div>
+
+            <!-- Ekstensi .py -->
+            <div class="p-4 bg-white border-2 border-amber-200 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-amber-950 text-sm flex items-center gap-1.5">
+                  <span>📁</span> Ekstensi File Program (.py)
+                </h4>
+                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">Kunci Soal #4</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                File program Python selalu berekstensi <strong>.py</strong> (misalnya latihan.py atau tugas.py).
+              </p>
+              <div class="p-2.5 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs">
+                latihan1.py<br />
+                tugas_subway.py
+              </div>
+            </div>
+
+            <!-- Komentar # -->
+            <div class="p-4 bg-white border-2 border-slate-200 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                  <span>#️⃣</span> Komentar di Python (Tanda Pagar #)
+                </h4>
+                <span class="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full">Kunci Soal #5</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                Tanda pagar (<strong>#</strong>) digunakan untuk catatan programmer yang <strong>tidak akan dijalankan</strong> komputer.
+              </p>
+              <div class="p-2.5 rounded-xl bg-slate-900 text-slate-400 font-mono text-xs">
+                # Catatan program siswa<br />
+                print("Hai!") <span class="text-amber-300"># cetak Hai</span>
+              </div>
+            </div>
+
+            <!-- Algoritma -->
+            <div class="p-4 bg-white border-2 border-blue-200 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-blue-950 text-sm flex items-center gap-1.5">
+                  <span>🧩</span> Pengertian Algoritma
+                </h4>
+                <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">Kunci Soal #6</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                <strong>Algoritma</strong> adalah deretan langkah-langkah logis, berurutan, dan terstruktur untuk memecahkan suatu masalah.
+              </p>
+              <div class="p-2.5 rounded-xl bg-blue-50 text-blue-900 text-xs font-semibold">
+                Mulai ➔ Input Nama ➔ Lari Subway ➔ Jawab Kuis ➔ Selesai
+              </div>
+            </div>
+
+            <!-- Karakteristik Python -->
+            <div class="sm:col-span-2 p-4 bg-amber-50/70 border-2 border-amber-300 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span>💡</span> Karakteristik Utama Bahasa Python
+                </h4>
+                <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">Kunci Soal #7</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
+                <div class="bg-white p-2.5 rounded-xl border border-amber-200">
+                  <strong>1. High-Level Language:</strong> Tata bahasanya sangat bersih, sederhana, dan mudah dipahami karena mirip bahasa Inggris sehari-hari.
+                </div>
+                <div class="bg-white p-2.5 rounded-xl border border-amber-200">
+                  <strong>2. Case-Sensitive:</strong> Huruf besar/kecil berpengaruh. <code class="text-rose-600 font-mono font-bold">print()</code> benar, sedangkan <code class="text-slate-500 font-mono line-through">Print()</code> akan Error.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: FUNGSI PRINT() -->
+        <div id="csTabContent_print" class="hidden space-y-4">
+          <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-2xl">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+              <h3 class="font-bold text-amber-900 text-base flex items-center gap-2">
+                <span>📢 Fungsi Perintah print() & Output Layar</span>
+              </h3>
+              <span class="text-[10px] bg-amber-200 text-amber-950 font-bold px-2.5 py-0.5 rounded-full border border-amber-300">
+                Kunci Soal #8
+              </span>
+            </div>
+            <p class="text-slate-700 text-xs sm:text-sm">
+              Fungsi <code class="bg-amber-200/80 px-1.5 py-0.5 rounded font-mono text-amber-950 font-bold">print()</code> bertugas menampilkan atau mencetak teks, angka, dan output hasil perhitungan ke layar konsol monitor.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Kurung Biasa () -->
+            <div class="p-4 bg-white border-2 border-slate-200 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                  <span>( )</span> Tanda Kurung Biasa
+                </h4>
+                <span class="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full">Kunci Soal #10</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                Pemanggilan fungsi di Python selalu menggunakan sepasang <strong>tanda kurung biasa: ( )</strong>, bukan [ ] atau { }.
+              </p>
+              <div class="p-2.5 rounded-xl bg-slate-900 text-white font-mono text-xs">
+                print("Halo") <span class="text-emerald-400">✓ Benar</span><br />
+                <span class="text-rose-400">print["Halo"] ✕ Salah</span>
+              </div>
+            </div>
+
+            <!-- Tanda Petik -->
+            <div class="p-4 bg-white border-2 border-amber-200 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-amber-950 text-sm flex items-center gap-1.5">
+                  <span>"..."</span> Tanda Petik untuk Teks
+                </h4>
+                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">Kunci Soal #9 & #11</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                Teks kata atau kalimat <strong>WAJIB diapit tanda petik</strong> dua ("...") atau petik satu ('...').
+              </p>
+              <div class="p-2.5 rounded-xl bg-slate-900 text-amber-300 font-mono text-xs">
+                print("Selamat Pagi!") ➔ Output: Selamat Pagi!<br />
+                print('Aku Siswa SMA') ➔ Output: Aku Siswa SMA
+              </div>
+            </div>
+
+            <!-- Operasi Matematika dalam print -->
+            <div class="sm:col-span-2 p-4 bg-white border-2 border-orange-200 rounded-2xl shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-orange-950 text-sm flex items-center gap-1.5">
+                  <span>🧮</span> Operasi Matematika dalam print() (Tanpa Petik)
+                </h4>
+                <span class="text-[10px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full">Kunci Soal #12, #13, #14</span>
+              </div>
+              <p class="text-xs text-slate-600">
+                Jika angka ditulis <strong>tanpa tanda petik</strong>, Python akan langsung menghitung operasi matematikanya:
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs">
+                <div class="bg-slate-900 text-white p-3 rounded-xl">
+                  <div class="text-emerald-400 font-bold flex justify-between">
+                    <span># Penjumlahan</span>
+                    <span class="text-[10px] text-amber-300">Soal #12</span>
+                  </div>
+                  print(5 + 5)<br />
+                  <span class="text-yellow-300"># Output: 10</span>
+                </div>
+                <div class="bg-slate-900 text-white p-3 rounded-xl">
+                  <div class="text-emerald-400 font-bold flex justify-between">
+                    <span># Pengurangan</span>
+                    <span class="text-[10px] text-amber-300">Soal #13</span>
+                  </div>
+                  print(10 - 3)<br />
+                  <span class="text-yellow-300"># Output: 7</span>
+                </div>
+                <div class="bg-slate-900 text-white p-3 rounded-xl">
+                  <div class="text-emerald-400 font-bold flex justify-between">
+                    <span># Perkalian (*)</span>
+                    <span class="text-[10px] text-amber-300">Soal #14</span>
+                  </div>
+                  print(4 * 2)<br />
+                  <span class="text-yellow-300"># Output: 8</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Perbedaan Teks vs Hitungan -->
+            <div class="sm:col-span-2 p-4 bg-rose-50 border-2 border-rose-300 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-rose-950 text-sm flex items-center gap-1.5">
+                  <span>⚠️</span> Perbedaan Sangat Penting: Angka Berkutip vs Tanpa Kutip!
+                </h4>
+                <span class="text-[10px] bg-rose-200 text-rose-950 font-bold px-2 py-0.5 rounded-full">Kunci Soal #15</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="bg-white p-3 rounded-xl border border-rose-200 font-mono">
+                  <span class="text-rose-700 font-bold">print("10 + 5")</span><br />
+                  <span class="text-slate-600 font-sans mt-1 block">
+                    ➔ Karena ada tanda petik, dicetak persis sebagai teks tulisan apa adanya: <strong class="text-rose-900 font-mono">10 + 5</strong>.
+                  </span>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-emerald-200 font-mono">
+                  <span class="text-emerald-700 font-bold">print(10 + 5)</span><br />
+                  <span class="text-slate-600 font-sans mt-1 block">
+                    ➔ Karena tanpa tanda petik, komputer menghitung hasilnya: <strong class="text-emerald-900 font-mono">15</strong>.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cetak Angka Langsung -->
+            <div class="sm:col-span-2 p-3.5 bg-amber-50/70 border-2 border-amber-300 rounded-2xl flex items-center justify-between gap-3 text-xs">
+              <div class="text-slate-800">
+                <strong>Bolehkah mencetak angka langsung tanpa petik?</strong> Ya! Contoh <code class="bg-white px-2 py-0.5 rounded border border-amber-300 font-mono text-amber-900 font-bold">print(100)</code> akan langsung mencetak angka <strong class="font-mono">100</strong> ke layar tanpa error.
+              </div>
+              <span class="text-[10px] bg-amber-200 text-amber-950 font-bold px-2 py-0.5 rounded-full shrink-0">Kunci Soal #16</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: TIPE DATA -->
+        <div id="csTabContent_tipe_data" class="hidden space-y-4">
+          <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-2xl">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+              <h3 class="font-bold text-emerald-900 text-base flex items-center gap-2">
+                <span>🔤 4 Tipe Data Dasar Python & Fungsi type()</span>
+              </h3>
+              <span class="text-[10px] bg-emerald-200 text-emerald-950 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                Kunci Soal #17 s.d. #37
+              </span>
+            </div>
+            <p class="text-slate-700 text-xs sm:text-sm">
+              Tipe data menentukan jenis nilai yang disimpan di dalam program. Ada 4 tipe data utama yang wajib dikuasai siswa kelas 10:
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- String -->
+            <div class="p-4 bg-emerald-50/60 border-2 border-emerald-300 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-emerald-950 text-sm flex items-center gap-1.5">
+                  <span>🔤</span> 1. String (str) - Teks
+                </div>
+                <span class="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-full font-mono">Soal #17–#21</span>
+              </div>
+              <p class="text-xs text-slate-700">
+                Tipe data untuk menyimpan teks kata/kalimat. <strong>Ciri khasnya wajib diapit tanda petik</strong> ("..." atau '...'). Termasuk angka yang diapit kutip!
+              </p>
+              <div class="bg-white p-2.5 rounded-xl border border-emerald-200 font-mono text-xs text-emerald-900">
+                kata = "Indonesia" <span class="text-slate-500"># Soal #18</span><br />
+                kota = "Jakarta" <span class="text-slate-500"># Soal #20</span><br />
+                nomor = "99" <span class="text-slate-500"># tetap String karena ada petik! (Soal #21)</span>
+              </div>
+            </div>
+
+            <!-- Integer -->
+            <div class="p-4 bg-blue-50/60 border-2 border-blue-300 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-blue-950 text-sm flex items-center gap-1.5">
+                  <span>🔢</span> 2. Integer (int) - Bilangan Bulat
+                </div>
+                <span class="text-[10px] bg-blue-200 text-blue-900 font-bold px-2 py-0.5 rounded-full font-mono">Soal #22–#26</span>
+              </div>
+              <p class="text-xs text-slate-700">
+                Tipe data untuk <strong>bilangan bulat tanpa koma/desimal</strong>. Mencakup bilangan positif, nol, dan negatif.
+              </p>
+              <div class="bg-white p-2.5 rounded-xl border border-blue-200 font-mono text-xs text-blue-900">
+                nilai = 25 <span class="text-slate-500"># Soal #23</span><br />
+                umur = 16 <span class="text-slate-500"># Soal #24</span><br />
+                pensil = 5 <span class="text-slate-500"># Soal #26</span><br />
+                suhu = -10 <span class="text-slate-500"># bulat negatif tetap int (Soal #25)</span>
+              </div>
+            </div>
+
+            <!-- Float -->
+            <div class="p-4 bg-purple-50/60 border-2 border-purple-300 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-purple-950 text-sm flex items-center gap-1.5">
+                  <span>📐</span> 3. Float (float) - Angka Desimal
+                </div>
+                <span class="text-[10px] bg-purple-200 text-purple-900 font-bold px-2 py-0.5 rounded-full font-mono">Soal #27–#31</span>
+              </div>
+              <p class="text-xs text-slate-700">
+                Tipe data untuk <strong>angka desimal atau pecahan</strong>. Di Python pemisah desimal <strong>menggunakan tanda titik (.)</strong>, bukan koma.
+              </p>
+              <div class="bg-white p-2.5 rounded-xl border border-purple-200 font-mono text-xs text-purple-900">
+                pi = 3.14 <span class="text-slate-500"># Soal #28</span><br />
+                tinggi = 168.5 <span class="text-slate-500"># Soal #29</span><br />
+                skor = 0.5 <span class="text-slate-500"># Soal #31 (titik pemisah, Soal #30)</span>
+              </div>
+            </div>
+
+            <!-- Boolean -->
+            <div class="p-4 bg-amber-50/60 border-2 border-amber-300 rounded-2xl shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-amber-950 text-sm flex items-center gap-1.5">
+                  <span>⚖️</span> 4. Boolean (bool) - Nilai Logika
+                </div>
+                <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full font-mono">Soal #32–#36</span>
+              </div>
+              <p class="text-xs text-slate-700">
+                Tipe data logika yang <strong>HANYA memiliki 2 nilai</strong>: <strong>True</strong> (Benar / Ya) dan <strong>False</strong> (Salah / Tidak). Huruf awal wajib kapital.
+              </p>
+              <div class="bg-white p-2.5 rounded-xl border border-amber-200 font-mono text-xs text-amber-900">
+                True ➔ Benar / Ya <span class="text-slate-500"># Soal #33</span><br />
+                False ➔ Salah / Tidak <span class="text-slate-500"># Soal #34</span><br />
+                lulus = True <span class="text-slate-500"># Soal #35</span><br />
+                menyala = False <span class="text-slate-500"># Soal #36</span>
+              </div>
+            </div>
+
+            <!-- type() -->
+            <div class="sm:col-span-2 p-4 bg-slate-900 text-white rounded-2xl shadow-md space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-cyan-300 text-sm flex items-center gap-1.5">
+                  <span>🔍</span> Perintah type() untuk Mengecek Tipe Data
+                </h4>
+                <span class="text-[10px] bg-cyan-900/60 text-cyan-300 border border-cyan-400/40 font-bold px-2 py-0.5 rounded-full font-mono">Kunci Soal #37</span>
+              </div>
+              <p class="text-xs text-slate-300">
+                Gunakan fungsi bawaan <strong>type()</strong> untuk mengetahui jenis tipe data dari sebuah nilai atau variabel di Python.
+              </p>
+              <div class="p-3 bg-black/60 rounded-xl font-mono text-xs space-y-1">
+                <div>print(type("Halo")) ➔ <span class="text-emerald-400">&lt;class 'str'&gt;</span> (String)</div>
+                <div>print(type(10)) ➔ <span class="text-blue-400">&lt;class 'int'&gt;</span> (Integer)</div>
+                <div>print(type(3.14)) ➔ <span class="text-purple-400">&lt;class 'float'&gt;</span> (Float)</div>
+                <div>print(type(True)) ➔ <span class="text-amber-400">&lt;class 'bool'&gt;</span> (Boolean)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: KISI-KISI -->
+        <div id="csTabContent_kisi_kisi" class="hidden space-y-4">
+          <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-2xl">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+              <h3 class="font-bold text-purple-950 text-base flex items-center gap-2">
+                <span>🗺️ Peta Kisi-Kisi 37 Soal Teori Python Kelas 10</span>
+              </h3>
+              <span class="text-[10px] bg-purple-200 text-purple-950 font-bold px-2.5 py-0.5 rounded-full border border-purple-300">
+                100% Selaras dengan Soal Kuis
+              </span>
+            </div>
+            <p class="text-slate-700 text-xs sm:text-sm">
+              Daftar pemetaan topik materi pembelajaran terhadap nomor soal di Bank Soal Subway Surfers.
+            </p>
+          </div>
+
+          <div class="overflow-x-auto rounded-2xl border-2 border-slate-200 shadow-sm">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-[10px] tracking-wider">
+                <tr>
+                  <th class="p-2.5 text-center w-16">No Soal</th>
+                  <th class="p-2.5">Kategori / Topik</th>
+                  <th class="p-2.5">Konsep Inti Yang Diuji</th>
+                  <th class="p-2.5">Kunci Jawaban Singkat</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#1</td><td class="p-2 font-semibold">Pengertian Coding</td><td class="p-2">Definisi paling sederhana kegiatan coding</td><td class="p-2 text-emerald-700 font-medium">Menulis instruksi agar komputer menjalankan tugas</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#2</td><td class="p-2 font-semibold">Tujuan Coding</td><td class="p-2">Manfaat belajar pemrograman bagi siswa</td><td class="p-2 text-emerald-700 font-medium">Melatih logika berpikir teratur & problem solving</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#3</td><td class="p-2 font-semibold">Variabel & Penugasan</td><td class="p-2">Simbol mengisi nilai ke variabel</td><td class="p-2 text-emerald-700 font-medium">Tanda sama dengan ( = )</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#4</td><td class="p-2 font-semibold">Ekstensi File</td><td class="p-2">Akhiran file script Python standar</td><td class="p-2 text-emerald-700 font-medium">.py</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#5</td><td class="p-2 font-semibold">Komentar Program</td><td class="p-2">Simbol membuat catatan yang diabaikan</td><td class="p-2 text-emerald-700 font-medium">Tanda pagar ( # )</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#6</td><td class="p-2 font-semibold">Pengertian Algoritma</td><td class="p-2">Langkah logis dan terstruktur memecahkan masalah</td><td class="p-2 text-emerald-700 font-medium">Algoritma</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-orange-600">#7</td><td class="p-2 font-semibold">Karakteristik Python</td><td class="p-2">Alasan Python sangat mudah bagi pemula</td><td class="p-2 text-emerald-700 font-medium">Sintaks bersih mirip bahasa Inggris sederhana</td></tr>
+                
+                <tr class="bg-amber-50/50"><td colspan="4" class="p-1.5 px-3 text-[10px] font-bold text-amber-900 uppercase tracking-wider">Topik 2: Fungsi print() & Operasi Output Layar (#8–#16)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#8</td><td class="p-2 font-semibold">Fungsi print()</td><td class="p-2">Tugas utama perintah print()</td><td class="p-2 text-emerald-700 font-medium">Menampilkan teks atau output ke layar monitor</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#9</td><td class="p-2 font-semibold">Tanda Petik</td><td class="p-2">Tanda baca wajib mengapit teks pada print()</td><td class="p-2 text-emerald-700 font-medium">Tanda petik ("..." atau '...')</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#10</td><td class="p-2 font-semibold">Tanda Kurung</td><td class="p-2">Bentuk kurung pemanggilan fungsi di Python</td><td class="p-2 text-emerald-700 font-medium">Kurung biasa: ( )</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#11</td><td class="p-2 font-semibold">Output Kalimat</td><td class="p-2">Hasil print("Selamat Pagi!")</td><td class="p-2 text-emerald-700 font-medium">Selamat Pagi!</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#12</td><td class="p-2 font-semibold">Penjumlahan</td><td class="p-2">Hasil operasi matematika print(5 + 5)</td><td class="p-2 text-emerald-700 font-medium">10</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#13</td><td class="p-2 font-semibold">Pengurangan</td><td class="p-2">Hasil operasi matematika print(10 - 3)</td><td class="p-2 text-emerald-700 font-medium">7</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#14</td><td class="p-2 font-semibold">Perkalian (*)</td><td class="p-2">Hasil operasi matematika print(4 * 2)</td><td class="p-2 text-emerald-700 font-medium">8</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#15</td><td class="p-2 font-semibold">Teks Berkutip</td><td class="p-2">Hasil print("10 + 5") di dalam tanda petik</td><td class="p-2 text-emerald-700 font-medium">10 + 5 (tercetak teks apa adanya)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#16</td><td class="p-2 font-semibold">Cetak Angka Langsung</td><td class="p-2">Kebolehan mencetak print(100) tanpa kutip</td><td class="p-2 text-emerald-700 font-medium">Boleh, langsung tercetak angka 100</td></tr>
+
+                <tr class="bg-emerald-50/50"><td colspan="4" class="p-1.5 px-3 text-[10px] font-bold text-emerald-900 uppercase tracking-wider">Topik 3: Tipe Data Dasar (str, int, float, bool) & type() (#17–#37)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-emerald-600">#17–#21</td><td class="p-2 font-semibold">String (str)</td><td class="p-2">Teks berkutip: "Indonesia", kota="Jakarta", "99"</td><td class="p-2 text-emerald-700 font-medium">Tipe data String (str)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-blue-600">#22–#26</td><td class="p-2 font-semibold">Integer (int)</td><td class="p-2">Bilangan bulat tanpa koma: 25, umur=16, -10, pensil=5</td><td class="p-2 text-emerald-700 font-medium">Tipe data Integer (int)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-purple-600">#27–#31</td><td class="p-2 font-semibold">Float (float)</td><td class="p-2">Angka desimal bertitik (.): 3.14, tinggi=168.5, 0.5</td><td class="p-2 text-emerald-700 font-medium">Tipe data Float (float)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-amber-600">#32–#36</td><td class="p-2 font-semibold">Boolean (bool)</td><td class="p-2">Hanya bernilai True (Benar/Ya) & False (Salah/Tidak)</td><td class="p-2 text-emerald-700 font-medium">Tipe data Boolean (bool)</td></tr>
+                <tr class="hover:bg-slate-50"><td class="p-2 text-center font-bold text-cyan-600">#37</td><td class="p-2 font-semibold">Cek Tipe Data</td><td class="p-2">Fungsi bawaan Python memeriksa jenis tipe data</td><td class="p-2 text-emerald-700 font-medium">type()</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
+        <div class="text-[11px] text-slate-600 font-medium hidden sm:block">
+          💡 <em>Semua materi di atas dirangkum langsung dari kurikulum Teori Dasar Python SMA Kelas 10.</em>
+        </div>
+        <button
+          type="button"
+          onclick="closeCheatSheetModal()"
+          class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors cursor-pointer ml-auto"
+        >
+          Tutup Materi
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 4: BANK SOAL TEORI PYTHON (37 SOAL & KUNCI JAWABAN) -->
+  <!-- ============================================================== -->
+  <div id="questionBankModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl border-4 border-amber-500 overflow-hidden text-slate-800 flex flex-col max-h-[92vh] my-auto animate-modal">
+      
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 px-6 py-4 text-white flex items-center justify-between shrink-0 border-b-4 border-amber-600">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shadow">
+            📚
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm sm:text-base md:text-lg font-bold font-retro tracking-wide">
+                BANK SOAL TEORI PYTHON
+              </h2>
+              <span class="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-amber-950/60 text-amber-200 text-[10px] font-bold uppercase border border-amber-300/40">
+                37 Soal Kelas 10
+              </span>
+            </div>
+            <p class="text-xs text-amber-100">
+              Kumpulan Soal Lengkap dengan Kunci Jawaban & Pembahasan Materi
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="closeQuestionBankModal(); openCheatSheetModal();"
+            class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs transition-colors cursor-pointer border border-white/30"
+          >
+            <span>📖 Buka Materi Teori</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="closeQuestionBankModal()"
+            class="p-1.5 rounded-full hover:bg-black/20 text-white/80 hover:text-white transition-colors cursor-pointer"
+            title="Tutup Bank Soal"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Bar & Search -->
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3 shrink-0">
+        <!-- Category Tabs -->
+        <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0" id="bankCategoryTabs">
+          <button
+            type="button"
+            onclick="setBankCategory('all')"
+            id="bankCatBtn_all"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-amber-600 text-white shadow-sm"
+          >
+            Semua (37)
+          </button>
+
+          <button
+            type="button"
+            onclick="setBankCategory('konsep')"
+            id="bankCatBtn_konsep"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-white hover:bg-slate-200 text-slate-700 border border-slate-200"
+          >
+            💻 Dasar Coding (7)
+          </button>
+
+          <button
+            type="button"
+            onclick="setBankCategory('print')"
+            id="bankCatBtn_print"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-white hover:bg-slate-200 text-slate-700 border border-slate-200"
+          >
+            📢 Fungsi print() (9)
+          </button>
+
+          <button
+            type="button"
+            onclick="setBankCategory('tipe_data')"
+            id="bankCatBtn_tipe_data"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-white hover:bg-slate-200 text-slate-700 border border-slate-200"
+          >
+            🔤 Tipe Data (21)
+          </button>
+        </div>
+
+        <!-- Search Box -->
+        <div class="relative w-full md:w-64 shrink-0">
+          <input
+            type="text"
+            id="bankSearchInput"
+            oninput="handleBankSearch(this.value)"
+            placeholder="Cari soal / kata kunci..."
+            class="w-full pl-8 pr-4 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-800 placeholder-slate-400"
+          />
+          <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+        </div>
+      </div>
+
+      <!-- Question Cards List -->
+      <div id="bankQuestionsList" class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Footer -->
+      <div class="p-4 bg-slate-100 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div class="text-xs text-slate-600 font-semibold" id="bankFooterCount">
+          ✅ Menampilkan 37 dari 37 soal teori Python SMA Kelas 10
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="closeQuestionBankModal(); openCheatSheetModal();"
+            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <span>📖 Pelajari Ringkasan Materi</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="closeQuestionBankModal()"
+            class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors cursor-pointer"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT: GAME ENGINE & BANK SOAL (37 SOAL SANGAT MUDAH) -->
+  <!-- ============================================================== -->
+  <script>
+    // -----------------------------------------------------------------
+    // 1. BANK SOAL LENGKAP: 37 SOAL TEORI DASAR PYTHON (SANGAT MUDAH)
+    // -----------------------------------------------------------------
+    const QUESTIONS_BANK = [
+      // 1. PENGERTIAN CODING & DASAR
+      {
+        id: 1,
+        categoryTitle: 'Pengertian Coding',
+        question: 'Apa arti atau pengertian paling sederhana dari kata "Coding"?',
+        options: [
+          'Menulis instruksi atau perintah agar komputer menjalankan tugas',
+          'Memperbaiki kabel monitor komputer yang putus',
+          'Menggambar pemandangan dengan pensil warna',
+          'Membeli pulsa dan kuota internet di toko'
+        ],
+        correctIndex: 0,
+        explanation: 'Coding adalah kegiatan menulis perintah atau instruksi terstruktur agar komputer dapat menjalankan tugas yang kita inginkan.'
+      },
+      {
+        id: 2,
+        categoryTitle: 'Tujuan Belajar Coding',
+        question: 'Apa manfaat utama siswa SMA belajar coding dan pemrograman?',
+        options: [
+          'Melatih logika berpikir teratur dan memecahkan masalah',
+          'Agar keyboard dan layar laptop cepat rusak',
+          'Hanya untuk menonton video di internet',
+          'Supaya baterai handphone cepat habis'
+        ],
+        correctIndex: 0,
+        explanation: 'Belajar coding sangat bermanfaat untuk melatih kemampuan berpikir logis, terstruktur, dan kreatif memecahkan masalah.'
+      },
+      {
+        id: 3,
+        categoryTitle: 'Variabel di Python',
+        question: 'Tanda baca apa yang digunakan untuk memberi atau menyimpan nilai ke dalam variabel di Python?',
+        options: [
+          'Tanda sama dengan ( = )',
+          'Tanda titik dua ( : )',
+          'Tanda panah ( -> )',
+          'Tanda tanya ( ? )'
+        ],
+        correctIndex: 0,
+        explanation: 'Tanda sama dengan (=) adalah operator penugasan (assignment) untuk menyimpan data atau nilai ke dalam sebuah variabel di Python.'
+      },
+      {
+        id: 4,
+        categoryTitle: 'Ekstensi File Python',
+        question: 'Ekstensi atau akhiran nama file standar untuk kode program Python adalah...',
+        options: [
+          '.py',
+          '.mp3',
+          '.docx',
+          '.xlsx'
+        ],
+        correctIndex: 0,
+        explanation: 'File script program Python selalu disimpan dengan akhiran .py, misalnya latihan.py atau tugas1.py.'
+      },
+      {
+        id: 5,
+        categoryTitle: 'Komentar di Python',
+        question: 'Simbol apa yang digunakan untuk membuat catatan/komentar di Python (tidak dijalankan komputer)?',
+        codeSnippet: '# Ini adalah catatan program',
+        options: [
+          'Tanda pagar ( # )',
+          'Tanda tanya ( ? )',
+          'Tanda dolar ( $ )',
+          'Tanda seru ( ! )'
+        ],
+        correctIndex: 0,
+        explanation: 'Tanda pagar (#) digunakan untuk menulis catatan/komentar yang tidak akan diproses atau dijalankan oleh Python.'
+      },
+      {
+        id: 6,
+        categoryTitle: 'Pengertian Algoritma',
+        question: 'Urutan langkah-langkah logis dan terstruktur untuk menyelesaikan suatu masalah disebut...',
+        options: [
+          'Algoritma',
+          'Monitor',
+          'Keyboard',
+          'Mouse'
+        ],
+        correctIndex: 0,
+        explanation: 'Algoritma adalah deretan langkah logis dan berurutan yang dibuat untuk memecahkan suatu masalah atau tugas.'
+      },
+      {
+        id: 7,
+        categoryTitle: 'Karakteristik Python',
+        question: 'Mengapa bahasa pemrograman Python sangat disukai dan cocok dipelajari oleh pemula?',
+        options: [
+          'Bahasanya mudah dibaca dan mirip bahasa Inggris sederhana',
+          'Harganya sangat mahal untuk dibeli',
+          'Hanya boleh dipakai oleh profesor luar negeri',
+          'Tidak bisa dijalankan di komputer biasa'
+        ],
+        correctIndex: 0,
+        explanation: 'Python dirancang dengan tata bahasa (sintaks) yang bersih, sederhana, dan mudah dipahami seperti bahasa Inggris sehari-hari.'
+      },
+
+      // 2. FUNGSI PRINT() & OUTPUT
+      {
+        id: 8,
+        categoryTitle: 'Fungsi print()',
+        question: 'Apa fungsi utama dari perintah print() dalam bahasa Python?',
+        options: [
+          'Menampilkan teks atau output hasil ke layar monitor',
+          'Mencetak kertas pada mesin fotokopi',
+          'Menghapus seluruh file di laptop',
+          'Mematikan daya listrik komputer'
+        ],
+        correctIndex: 0,
+        explanation: 'Fungsi print() bertugas mencetak atau menampilkan teks dan informasi ke layar konsol komputer.'
+      },
+      {
+        id: 9,
+        categoryTitle: 'Fungsi print()',
+        question: 'Tanda baca apakah yang WAJIB mengapit teks kata/kalimat di dalam perintah print()?',
+        codeSnippet: 'print("Halo Teman")',
+        options: [
+          'Tanda petik ("..." atau \'...\')',
+          'Tanda pagar (#...#)',
+          'Tanda persen (%...%)',
+          'Tanda tanya (?...?)'
+        ],
+        correctIndex: 0,
+        explanation: 'Setiap teks atau kalimat wajib dibungkus oleh tanda petik, baik tanda petik dua ("...") maupun petik satu (\'...\').'
+      },
+      {
+        id: 10,
+        categoryTitle: 'Fungsi print()',
+        question: 'Tanda kurung jenis apakah yang digunakan pada perintah print() di Python?',
+        codeSnippet: 'print(...)',
+        options: [
+          'Tanda kurung biasa: ( )',
+          'Tanda kurung siku: [ ]',
+          'Tanda kurung kurawal: { }',
+          'Tanda sudut: < >'
+        ],
+        correctIndex: 0,
+        explanation: 'Perintah pemanggilan fungsi di Python selalu menggunakan sepasang tanda kurung biasa ( ).'
+      },
+      {
+        id: 11,
+        categoryTitle: 'Fungsi print()',
+        question: 'Perhatikan kode berikut: print("Selamat Pagi!"). Apa yang akan muncul di layar?',
+        codeSnippet: 'print("Selamat Pagi!")',
+        options: [
+          'Selamat Pagi!',
+          'Error tidak mau jalan',
+          'Layar monitor menjadi gelap',
+          'Suara sirine berbunyi'
+        ],
+        correctIndex: 0,
+        explanation: 'Python akan menampilkan teks di dalam tanda petik dengan bersih ke layar: Selamat Pagi!.'
+      },
+      {
+        id: 12,
+        categoryTitle: 'Fungsi print()',
+        question: 'Perhatikan kode penjumlahan ini: print(5 + 5). Berapakah hasil yang tampil di layar?',
+        codeSnippet: 'print(5 + 5)',
+        options: [
+          '10',
+          '55',
+          '5 + 5',
+          '0'
+        ],
+        correctIndex: 0,
+        explanation: 'Karena angka 5 + 5 ditulis tanpa tanda petik, Python langsung menghitung hasil matematikanya yaitu 10.'
+      },
+      {
+        id: 13,
+        categoryTitle: 'Fungsi print()',
+        question: 'Perhatikan kode pengurangan ini: print(10 - 3). Berapakah hasil yang tampil di layar?',
+        codeSnippet: 'print(10 - 3)',
+        options: [
+          '7',
+          '103',
+          '13',
+          'Error'
+        ],
+        correctIndex: 0,
+        explanation: 'Python langsung menghitung operasi 10 dikurangi 3 sehingga menghasilkan output: 7.'
+      },
+      {
+        id: 14,
+        categoryTitle: 'Fungsi print()',
+        question: 'Perhatikan kode perkalian ini: print(4 * 2). Berapakah hasil yang tampil di layar?',
+        codeSnippet: 'print(4 * 2)',
+        options: [
+          '8',
+          '42',
+          '6',
+          '2'
+        ],
+        correctIndex: 0,
+        explanation: 'Tanda bintang (*) adalah lambang perkalian di Python. 4 dikali 2 adalah 8.'
+      },
+      {
+        id: 15,
+        categoryTitle: 'Fungsi print()',
+        question: 'Jika angka dibungkus tanda petik seperti print("10 + 5"), apa yang tercetak di layar?',
+        codeSnippet: 'print("10 + 5")',
+        options: [
+          '10 + 5 (tercetak sebagai teks persis apa adanya)',
+          '15',
+          '50',
+          'Error'
+        ],
+        correctIndex: 0,
+        explanation: 'Karena diapit tanda petik, Python menganggapnya sebagai teks biasa sehingga dicetak persis apa adanya: 10 + 5.'
+      },
+      {
+        id: 16,
+        categoryTitle: 'Fungsi print()',
+        question: 'Apakah kita boleh mencetak angka langsung tanpa tanda petik, misalnya print(100)?',
+        codeSnippet: 'print(100)',
+        options: [
+          'Boleh, angka 100 langsung tercetak ke layar',
+          'Tidak boleh, harus pakai tanda pagar',
+          'Komputer akan langsung restart',
+          'Layar laptop akan rusak'
+        ],
+        correctIndex: 0,
+        explanation: 'Angka bulat maupun desimal boleh langsung dicetak tanpa tanda kutip oleh fungsi print().'
+      },
+
+      // 3. TIPE DATA STRING (str)
+      {
+        id: 17,
+        categoryTitle: 'Tipe Data String',
+        question: 'Apa nama tipe data di Python yang khusus digunakan untuk menyimpan teks kata atau kalimat?',
+        options: [
+          'String (str)',
+          'Integer (int)',
+          'Float (float)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'String (str) adalah jenis tipe data untuk teks/huruf/kalimat yang diapit oleh tanda petik.'
+      },
+      {
+        id: 18,
+        categoryTitle: 'Tipe Data String',
+        question: 'Manakah di bawah ini yang merupakan contoh nilai bertipe data String (str)?',
+        options: [
+          '"Indonesia"',
+          '2026',
+          '3.14',
+          'True'
+        ],
+        correctIndex: 0,
+        explanation: '"Indonesia" memiliki tanda petik, sehingga merupakan tipe data String.'
+      },
+      {
+        id: 19,
+        categoryTitle: 'Tipe Data String',
+        question: 'Ciri khas utama dari nilai bertipe data String di Python adalah selalu diapit oleh...',
+        options: [
+          'Tanda petik ("..." atau \'...\')',
+          'Tanda tambah (+...+)',
+          'Tanda kurang (-...-)',
+          'Tanda seru (!...!)'
+        ],
+        correctIndex: 0,
+        explanation: 'Nilai String selalu dibungkus tanda petik satu atau petik dua.'
+      },
+      {
+        id: 20,
+        categoryTitle: 'Tipe Data String',
+        question: 'Perhatikan kode berikut: kota = "Jakarta". Apa tipe data dari variabel kota?',
+        codeSnippet: 'kota = "Jakarta"',
+        options: [
+          'String (str)',
+          'Integer (int)',
+          'Float (float)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Karena nilai "Jakarta" diapit tanda kutip, maka tipenya adalah String (str).'
+      },
+      {
+        id: 21,
+        categoryTitle: 'Tipe Data String',
+        question: 'Jika angka dibungkus tanda petik seperti nomor = "99", apa tipe datanya?',
+        codeSnippet: 'nomor = "99"',
+        options: [
+          'String (str), karena ada tanda petiknya',
+          'Integer (int)',
+          'Float (float)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Semua karakter apapun yang diapit tanda petik otomatis menjadi tipe data String (str).'
+      },
+
+      // 4. TIPE DATA INTEGER (int)
+      {
+        id: 22,
+        categoryTitle: 'Tipe Data Integer',
+        question: 'Tipe data untuk menyimpan angka BILANGAN BULAT (tanpa koma desimal) disebut...',
+        options: [
+          'Integer (int)',
+          'String (str)',
+          'Float (float)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Integer (disingkat int) adalah tipe data untuk angka bilangan bulat, seperti 1, 5, 20, 100.'
+      },
+      {
+        id: 23,
+        categoryTitle: 'Tipe Data Integer',
+        question: 'Manakah di bawah ini yang merupakan contoh bilangan Integer (bilangan bulat)?',
+        options: [
+          '25',
+          '"25"',
+          '25.5',
+          'False'
+        ],
+        correctIndex: 0,
+        explanation: 'Angka 25 tanpa tanda petik dan tanpa koma desimal adalah bilangan bulat bertipe Integer.'
+      },
+      {
+        id: 24,
+        categoryTitle: 'Tipe Data Integer',
+        question: 'Perhatikan kode berikut: umur = 16. Apa tipe data dari variabel umur?',
+        codeSnippet: 'umur = 16',
+        options: [
+          'Integer (int)',
+          'String (str)',
+          'Float (float)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Angka 16 adalah bilangan bulat tanpa pecahan sehingga bertipe data Integer (int).'
+      },
+      {
+        id: 25,
+        categoryTitle: 'Tipe Data Integer',
+        question: 'Apakah bilangan negatif seperti -10 termasuk ke dalam tipe data Integer (int)?',
+        options: [
+          'Ya, bilangan bulat negatif termasuk Integer',
+          'Tidak, Integer hanya boleh angka 0',
+          'Bukan, itu teks',
+          'Hanya boleh pecahan'
+        ],
+        correctIndex: 0,
+        explanation: 'Integer mencakup semua bilangan bulat: baik positif (10), nol (0), maupun negatif (-10).'
+      },
+      {
+        id: 26,
+        categoryTitle: 'Tipe Data Integer',
+        question: 'Pada kode: pensil = 5, angka 5 tidak memakai tanda petik sehingga bertipe data...',
+        codeSnippet: 'pensil = 5',
+        options: [
+          'Integer (int)',
+          'String (str)',
+          'Float (float)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Angka 5 adalah bilangan bulat murni sehingga bertipe data Integer (int).'
+      },
+
+      // 5. TIPE DATA FLOAT (float)
+      {
+        id: 27,
+        categoryTitle: 'Tipe Data Float',
+        question: 'Tipe data untuk menyimpan angka DESIMAL atau pecahan (berkoma titik) disebut...',
+        options: [
+          'Float (float)',
+          'Integer (int)',
+          'String (str)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Float adalah tipe data untuk angka desimal atau pecahan yang memiliki tanda titik pemisah.'
+      },
+      {
+        id: 28,
+        categoryTitle: 'Tipe Data Float',
+        question: 'Manakah di bawah ini yang merupakan contoh nilai bertipe data Float (desimal)?',
+        options: [
+          '3.14',
+          '100',
+          '"3.14"',
+          'True'
+        ],
+        correctIndex: 0,
+        explanation: 'Angka 3.14 memiliki tanda titik desimal sehingga bertipe data Float.'
+      },
+      {
+        id: 29,
+        categoryTitle: 'Tipe Data Float',
+        question: 'Perhatikan kode berikut: tinggi = 168.5. Apa tipe data dari variabel tinggi?',
+        codeSnippet: 'tinggi = 168.5',
+        options: [
+          'Float (float)',
+          'Integer (int)',
+          'String (str)',
+          'Boolean (bool)'
+        ],
+        correctIndex: 0,
+        explanation: 'Nilai 168.5 mengandung pecahan desimal dengan titik sehingga bertipe data Float.'
+      },
+      {
+        id: 30,
+        categoryTitle: 'Tipe Data Float',
+        question: 'Tanda baca apa yang digunakan di Python sebagai pemisah angka desimal (pecahan)?',
+        options: [
+          'Tanda titik ( . ), contoh: 7.5',
+          'Tanda koma ( , ), contoh: 7,5',
+          'Tanda titik dua ( : ), contoh: 7:5',
+          'Tanda garis miring ( / ), contoh: 7/5'
+        ],
+        correctIndex: 0,
+        explanation: 'Dalam bahasa pemrograman internasional seperti Python, pemisah desimal menggunakan tanda titik (.), bukan koma.'
+      },
+      {
+        id: 31,
+        categoryTitle: 'Tipe Data Float',
+        question: 'Manakah nilai di bawah ini yang termasuk angka desimal (Float)?',
+        options: [
+          '0.5',
+          '50',
+          '"0.5"',
+          'False'
+        ],
+        correctIndex: 0,
+        explanation: 'Angka 0.5 memiliki pecahan desimal tanpa tanda petik, sehingga bertipe data Float.'
+      },
+
+      // 6. TIPE DATA BOOLEAN (bool)
+      {
+        id: 32,
+        categoryTitle: 'Tipe Data Boolean',
+        question: 'Tipe data Boolean (bool) dalam Python hanya memiliki DUA kemungkinan nilai, yaitu...',
+        options: [
+          'True dan False',
+          'Yes dan No',
+          '1 dan 2',
+          'Hitam dan Putih'
+        ],
+        correctIndex: 0,
+        explanation: 'Boolean hanya bernilai True (Benar) atau False (Salah).'
+      },
+      {
+        id: 33,
+        categoryTitle: 'Tipe Data Boolean',
+        question: 'Apa arti dari nilai Boolean "True" dalam bahasa Indonesia?',
+        options: [
+          'Benar / Ya',
+          'Salah / Tidak',
+          'Kosong',
+          'Batal'
+        ],
+        correctIndex: 0,
+        explanation: 'True memiliki arti Benar / Ya dalam logika pemrograman.'
+      },
+      {
+        id: 34,
+        categoryTitle: 'Tipe Data Boolean',
+        question: 'Apa arti dari nilai Boolean "False" dalam bahasa Indonesia?',
+        options: [
+          'Salah / Tidak',
+          'Benar / Ya',
+          'Juara',
+          'Lanjut'
+        ],
+        correctIndex: 0,
+        explanation: 'False memiliki arti Salah / Tidak dalam logika pemrograman.'
+      },
+      {
+        id: 35,
+        categoryTitle: 'Tipe Data Boolean',
+        question: 'Perhatikan kode berikut: lulus = True. Apa tipe data dari variabel lulus?',
+        codeSnippet: 'lulus = True',
+        options: [
+          'Boolean (bool)',
+          'String (str)',
+          'Integer (int)',
+          'Float (float)'
+        ],
+        correctIndex: 0,
+        explanation: 'True adalah salah satu nilai dari tipe data logika Boolean (bool).'
+      },
+      {
+        id: 36,
+        categoryTitle: 'Tipe Data Boolean',
+        question: 'Perhatikan kode berikut: menyala = False. Apa tipe data dari variabel menyala?',
+        codeSnippet: 'menyala = False',
+        options: [
+          'Boolean (bool)',
+          'String (str)',
+          'Integer (int)',
+          'Float (float)'
+        ],
+        correctIndex: 0,
+        explanation: 'False adalah nilai dari tipe data logika Boolean (bool).'
+      },
+      {
+        id: 37,
+        categoryTitle: 'Mengecek Tipe Data',
+        question: 'Perintah bawaan Python apa yang dapat digunakan untuk mengetahui tipe data suatu nilai?',
+        codeSnippet: 'print(type(10))',
+        options: [
+          'type()',
+          'cek()',
+          'tahu()',
+          'lihat()'
+        ],
+        correctIndex: 0,
+        explanation: 'Fungsi type() digunakan untuk memeriksa dan mengetahui jenis tipe data dari suatu nilai atau variabel.'
+      }
+    ];
+
+    // -----------------------------------------------------------------
+    // 2. RETRO WEB AUDIO SYNTHESIZER
+    // -----------------------------------------------------------------
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleAudioSound() {
+      isSoundMuted = !isSoundMuted;
+      const btn = document.getElementById('soundToggleBtn');
+      if (btn) btn.textContent = isSoundMuted ? '🔇' : '🔊';
+    }
+
+    function playTone(freq, type, duration, vol = 0.15) {
+      if (isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (err) {}
+    }
+
+    function playSubwayHornSnd() {
+      playTone(330, 'sawtooth', 0.18, 0.2);
+      setTimeout(() => playTone(392, 'sawtooth', 0.24, 0.25), 100);
+    }
+
+    function playWhooshSnd() {
+      playTone(220, 'sine', 0.08, 0.1);
+    }
+
+    function playJumpSnd() {
+      if (isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(650, ctx.currentTime + 0.16);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.16);
+      } catch (e) {}
+    }
+
+    function playCoinChime() {
+      playTone(987.77, 'sine', 0.12, 0.18);
+      setTimeout(() => playTone(1318.51, 'sine', 0.22, 0.2), 70);
+    }
+
+    function playCrashSnd() {
+      playTone(150, 'sawtooth', 0.3, 0.25);
+      setTimeout(() => playTone(90, 'triangle', 0.35, 0.3), 80);
+    }
+
+    function playCorrectFanfare() {
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => playTone(freq, 'triangle', 0.25, 0.22), idx * 110);
+      });
+    }
+
+    function playWrongBuzzer() {
+      playTone(220, 'sawtooth', 0.22, 0.25);
+      setTimeout(() => playTone(174.61, 'sawtooth', 0.35, 0.3), 180);
+    }
+
+    function playCountdownBeepSnd(stage) {
+      if (isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        if (stage === 'GO') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(659.25, now);
+          osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.18);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.45);
+        } else {
+          const freqs = { 3: 440, 2: 554.37, 1: 659.25 };
+          const freq = freqs[stage] || 500;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {}
+    }
+
+    // -----------------------------------------------------------------
+    // 3. PERSISTENT LOCALSTORAGE LEADERBOARD & SESSION LOGIC
+    // -----------------------------------------------------------------
+    const LEADERBOARD_KEY = 'python_subway_leaderboard_v1';
+    const SESSION_KEY = 'python_subway_session_count_v1';
+
+    let sessionCount = 0;
+    try {
+      sessionCount = parseInt(localStorage.getItem(SESSION_KEY) || '0', 10);
+    } catch {}
+
+    function getStoredLeaderboard() {
+      try {
+        const raw = localStorage.getItem(LEADERBOARD_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveLeaderboard(data) {
+      try {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
+      } catch {}
+    }
+
+    function addScoreToLeaderboard(name, score, coins, isCorrect, qText, catTitle) {
+      const current = getStoredLeaderboard();
+      const newEntry = {
+        id: 'subway_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        studentName: name,
+        score: score,
+        coinsCollected: coins,
+        isCorrect: isCorrect,
+        questionText: qText,
+        categoryTitle: catTitle,
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      };
+      const updated = [newEntry, ...current];
+      saveLeaderboard(updated);
+      return updated;
+    }
+
+    let previousSessionCount = 0;
+    let resetToastTimer = null;
+
+    function toggleResetSessionPrompt(show) {
+      const box = document.getElementById('resetSessionInlinePrompt');
+      if (box) {
+        if (show) {
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
+        }
+      }
+    }
+
+    function confirmResetSession() {
+      // Direct backward-compatibility hook for any button
+      toggleResetSessionPrompt(true);
+    }
+
+    function executeResetSession() {
+      previousSessionCount = sessionCount;
+      sessionCount = 0;
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch (e) {}
+
+      const counterEl = document.getElementById('sessionCounterText');
+      if (counterEl) counterEl.textContent = '0 Siswa';
+
+      toggleResetSessionPrompt(false);
+      showResetSessionToast('✓ Sesi giliran berhasil direset ke 0 Siswa! (Data Papan Peringkat tetap tersimpan aman)', true);
+      playCoinChime();
+    }
+
+    function undoResetSession() {
+      sessionCount = previousSessionCount;
+      try {
+        localStorage.setItem(SESSION_KEY, sessionCount.toString());
+      } catch (e) {}
+
+      const counterEl = document.getElementById('sessionCounterText');
+      if (counterEl) counterEl.textContent = sessionCount + ' Siswa';
+
+      hideResetSessionToast();
+      playCoinChime();
+    }
+
+    function showResetSessionToast(msg, showUndo = false) {
+      if (resetToastTimer) clearTimeout(resetToastTimer);
+      const toast = document.getElementById('resetSuccessToast');
+      const textEl = document.getElementById('resetSuccessToastText');
+      const undoBtn = document.getElementById('btnUndoReset');
+      if (toast && textEl) {
+        textEl.textContent = msg;
+        if (undoBtn) {
+          undoBtn.style.display = (showUndo && previousSessionCount > 0) ? 'inline-block' : 'none';
+        }
+        toast.classList.remove('hidden');
+        resetToastTimer = setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 5000);
+      }
+    }
+
+    function hideResetSessionToast() {
+      if (resetToastTimer) clearTimeout(resetToastTimer);
+      const toast = document.getElementById('resetSuccessToast');
+      if (toast) toast.classList.add('hidden');
+    }
+
+    function toggleClearLeaderboardPrompt(show) {
+      const box = document.getElementById('clearLeaderboardPrompt');
+      if (box) {
+        if (show) {
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
+        }
+      }
+    }
+
+    function confirmClearLeaderboard() {
+      toggleClearLeaderboardPrompt(true);
+    }
+
+    function executeClearLeaderboard() {
+      try {
+        localStorage.removeItem(LEADERBOARD_KEY);
+      } catch (e) {}
+      toggleClearLeaderboardPrompt(false);
+      renderLeaderboardUI();
+      showResetSessionToast('✓ Seluruh data riwayat papan peringkat telah dihapus.', false);
+    }
+
+    function downloadCSVLeaderboard() {
+      const entries = getStoredLeaderboard();
+      if (entries.length === 0) {
+        showResetSessionToast('⚠️ Belum ada data nilai di papan peringkat untuk diekspor.', false);
+        return;
+      }
+      const headers = ['No', 'Nama Siswa', 'Koin Terkumpul', 'Skor Akhir', 'Status Soal', 'Kategori', 'Pertanyaan', 'Waktu'];
+      const rows = entries.map((e, idx) => [
+        idx + 1,
+        `"${e.studentName.replace(/"/g, '""')}"`,
+        e.coinsCollected || 0,
+        e.score,
+        e.isCorrect ? 'BENAR (+100)' : 'SALAH (0)',
+        `"${e.categoryTitle.replace(/"/g, '""')}"`,
+        `"${e.questionText.replace(/"/g, '""')}"`,
+        `"${e.timestamp}"`
+      ]);
+      const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Rekap_Nilai_Subway_Python_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // -----------------------------------------------------------------
+    // 4. SUBWAY SURFERS 3-LANE RUNNER CANVAS GAMEPLAY
+    // (LARI SANTAI 15-20 DETIK: 0-90m BEBAS KOIN, 90-135m RINTANGAN, 135m+ GERBANG KUIS)
+    // -----------------------------------------------------------------
+    let canvas, ctx;
+    let animFrameId = null;
+
+    let gameState = {
+      laneX: 1, // 0 = Left, 1 = Center, 2 = Right
+      targetLane: 1,
+      isJumping: false,
+      jumpTimer: 0,
+      jumpY: 0,
+      speed: 0.0088, // Kecepatan Santai & Terukur
+      distance: 0,
+      tick: 0,
+      coins: 0,
+      items: [],
+      nextId: 1,
+      spawnDist: 0,
+      hasTriggered: false,
+      quizGateSpawned: false
+    };
+
+    function initCanvasGame() {
+      canvas = document.getElementById('subwayCanvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+
+      // Smartboard Touch Swipe Detection
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          touchStartTime = Date.now();
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchend', (e) => {
+        if (e.changedTouches.length === 0) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        const dt = Date.now() - touchStartTime;
+
+        if (dt < 500) {
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx < -30) movePlayerLeft();
+            else if (dx > 30) movePlayerRight();
+          } else {
+            if (dy < -30) playerJump();
+          }
+        }
+      }, { passive: true });
+    }
+
+    // -----------------------------------------------------------------
+    // SPEED PRESETS: Santai (0.0075), Cepat/Default (0.0095), Super Cepat (0.0120)
+    // -----------------------------------------------------------------
+    const SPEED_CONFIGS = {
+      relaxed: { label: 'Santai', icon: '🐢', base: 0.0075, distStep: 0.14 },
+      fast: { label: 'Cepat (Default)', icon: '⚡', base: 0.0095, distStep: 0.18 },
+      turbo: { label: 'Super Cepat', icon: '🚀', base: 0.0120, distStep: 0.24 }
+    };
+    let currentSpeedPreset = 'fast';
+    try {
+      const saved = localStorage.getItem('subway_speed_preset');
+      if (saved && SPEED_CONFIGS[saved]) currentSpeedPreset = saved;
+    } catch(e) {}
+
+    function setSpeedPreset(preset) {
+      if (!SPEED_CONFIGS[preset]) return;
+      currentSpeedPreset = preset;
+      try { localStorage.setItem('subway_speed_preset', preset); } catch(e) {}
+      if (gameState) {
+        gameState.speed = SPEED_CONFIGS[preset].base;
+      }
+      updateSpeedButtonsUI();
+    }
+
+    function cycleSpeedPreset() {
+      const keys = ['relaxed', 'fast', 'turbo'];
+      const nextIdx = (keys.indexOf(currentSpeedPreset) + 1) % keys.length;
+      setSpeedPreset(keys[nextIdx]);
+    }
+
+    function updateSpeedButtonsUI() {
+      const label = document.getElementById('canvasHudSpeedLabel');
+      if (label) {
+        const cfg = SPEED_CONFIGS[currentSpeedPreset];
+        label.textContent = `${cfg.icon} ${cfg.label}`;
+      }
+      const pillsContainer = document.getElementById('speedPillsContainer');
+      if (pillsContainer) {
+        pillsContainer.innerHTML = (['relaxed', 'fast', 'turbo']).map(k => {
+          const cfg = SPEED_CONFIGS[k];
+          const isActive = currentSpeedPreset === k;
+          return `<button type="button" onclick="setSpeedPreset('${k}')" class="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${isActive ? 'bg-amber-600 text-white ring-2 ring-amber-300 shadow-sm' : 'bg-white hover:bg-amber-100 text-slate-700 border border-amber-200'}">${cfg.icon} ${cfg.label}</button>`;
+        }).join('');
+      }
+    }
+
+    function resetSubwayGame(studentName) {
+      currentStudentName = studentName;
+      currentCoinsCollected = 0;
+      isGamePaused = true; // PAUSE initially during 3-2-1 countdown!
+
+      const activeSpeedCfg = SPEED_CONFIGS[currentSpeedPreset] || SPEED_CONFIGS.fast;
+
+      // Generous coin runway, relaxed speed, obstacles only spawn later
+      gameState = {
+        laneX: 1,
+        targetLane: 1,
+        isJumping: false,
+        jumpTimer: 0,
+        jumpY: 0,
+        speed: activeSpeedCfg.base, // Kecepatan aktif (Default: 0.0095 - sedikit lebih cepat & seru)
+        distance: 0,
+        tick: 0,
+        runTick: 0,
+        coins: 0,
+        items: [
+          // Runway awal 100% KOIN EMAS - Bebas rintangan agar siswa santai latihan tombol!
+          { id: 1, type: 'coin', lane: 1, z: 0.28 },
+          { id: 2, type: 'coin', lane: 1, z: 0.42 },
+          { id: 3, type: 'coin', lane: 1, z: 0.56 },
+          { id: 4, type: 'coin', lane: 0, z: 0.68 },
+          { id: 5, type: 'coin', lane: 0, z: 0.82 },
+          { id: 6, type: 'coin', lane: 2, z: 0.68 },
+          { id: 7, type: 'coin', lane: 2, z: 0.82 },
+          { id: 8, type: 'coin', lane: 1, z: 0.94 },
+        ],
+        nextId: 9,
+        spawnDist: 0,
+        hasTriggered: false,
+        quizGateSpawned: false
+      };
+
+      updateLaneBadge();
+      document.getElementById('canvasHudStudent').textContent = studentName;
+      document.getElementById('canvasHudCoins').textContent = '0';
+      document.getElementById('canvasHudDist').textContent = '0m';
+      document.getElementById('canvasHudProgressBar').style.width = '0%';
+      updatePhaseBanner(0);
+
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      runGameLoop();
+    }
+
+    function updatePhaseBanner(dist) {
+      const banner = document.getElementById('canvasPhaseBanner');
+      if (!banner) return;
+      if (dist < 25) {
+        banner.className = 'absolute top-14 left-1/2 -translate-x-1/2 z-10 px-4 py-1.5 rounded-full shadow-lg border-2 text-xs sm:text-sm font-bold flex items-center gap-2 pointer-events-none whitespace-nowrap bg-emerald-600 border-emerald-400 text-white transition-all duration-300';
+        banner.innerHTML = '<span>🪙 LINTASAN KOIN AMAN! Latihan Geser Kiri / Kanan & Lompat!</span>';
+      } else {
+        banner.className = 'absolute top-14 left-1/2 -translate-x-1/2 z-10 px-4 py-1.5 rounded-full shadow-lg border-2 text-xs sm:text-sm font-bold flex items-center gap-2 pointer-events-none whitespace-nowrap bg-amber-500 border-amber-300 text-white transition-all duration-300';
+        banner.innerHTML = '<span>⚡ HINDARI RINTANGAN & TABRAK KOTAK SOAL PYTHON ❓</span>';
+      }
+    }
+
+    function movePlayerLeft() {
+      if (isGamePaused || gameState.hasTriggered) return;
+      if (gameState.targetLane > 0) {
+        gameState.targetLane--;
+        playWhooshSnd();
+        updateLaneBadge();
+      }
+    }
+
+    function movePlayerRight() {
+      if (isGamePaused || gameState.hasTriggered) return;
+      if (gameState.targetLane < 2) {
+        gameState.targetLane++;
+        playWhooshSnd();
+        updateLaneBadge();
+      }
+    }
+
+    function playerJump() {
+      if (isGamePaused || gameState.hasTriggered) return;
+      if (!gameState.isJumping) {
+        gameState.isJumping = true;
+        gameState.jumpTimer = 0;
+        playJumpSnd();
+      }
+    }
+
+    function updateLaneBadge() {
+      const badge = document.getElementById('canvasLaneBadge');
+      if (!badge) return;
+      const l = gameState.targetLane;
+      badge.textContent = 'JALUR: ' + (l === 0 ? '◀ KIRI' : l === 1 ? '● TENGAH' : 'KANAN ▶');
+    }
+
+    // Keyboard Event Listener (Laptop Guru)
+    window.addEventListener('keydown', (e) => {
+      if (isGamePaused) return;
+      if (document.getElementById('viewGameplay').classList.contains('hidden')) return;
+
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        e.preventDefault();
+        movePlayerLeft();
+      } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        e.preventDefault();
+        movePlayerRight();
+      } else if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') {
+        e.preventDefault();
+        playerJump();
+      }
+    });
+
+    // Main 60 FPS Game Loop
+    function runGameLoop() {
+      const s = gameState;
+      s.tick++;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const horizonY = h * 0.32;
+      const horizonX = w * 0.5;
+
+      const bottomSpread = w * 0.78;
+      const bottomTrackLeft = (w - bottomSpread) / 2;
+      const bottomTrackRight = bottomTrackLeft + bottomSpread;
+      const topSpread = 50;
+
+      // Physics & Interactions (ONLY when actively running after GO!)
+      const isRunning = !isGamePaused && !s.hasTriggered;
+      if (isRunning) {
+        s.runTick = (s.runTick || 0) + 1;
+        const speedCfg = SPEED_CONFIGS[currentSpeedPreset] || SPEED_CONFIGS.fast;
+        s.distance += speedCfg.distStep;
+        if (s.runTick % 6 === 0) {
+          const currentMeters = Math.floor(s.distance);
+          document.getElementById('canvasHudDist').textContent = currentMeters + 'm';
+          const pct = Math.min(100, Math.round((currentMeters / 100) * 100));
+          document.getElementById('canvasHudProgressBar').style.width = pct + '%';
+          updatePhaseBanner(currentMeters);
+        }
+
+        // KECEPATAN SAMA CEPAT & KONSISTEN DI SELURUH LINTASAN
+        // Karakter tetap lari cepat tanpa melambat saat mendekati atau melewati rintangan
+        s.speed = speedCfg.base;
+
+        // Smooth lane lerp
+        s.laneX += (s.targetLane - s.laneX) * 0.22;
+
+        // Snappy arcade jump
+        if (s.isJumping) {
+          s.jumpTimer++;
+          const progress = s.jumpTimer / 30;
+          if (progress >= 1) {
+            s.isJumping = false;
+            s.jumpY = 0;
+            s.jumpTimer = 0;
+          } else {
+            s.jumpY = Math.sin(progress * Math.PI) * 82;
+          }
+        }
+
+        // Move Track Items
+        for (let i = s.items.length - 1; i >= 0; i--) {
+          const item = s.items[i];
+          item.z -= s.speed;
+
+          // Collision check close to player (z around 0.15 - 0.02)
+          if (item.z <= 0.15 && item.z >= 0.02) {
+            const runnerLane = Math.round(s.laneX);
+
+            if (item.type === 'coin' && !item.collected) {
+              if (runnerLane === item.lane) {
+                item.collected = true;
+                s.coins++;
+                currentCoinsCollected = s.coins;
+                document.getElementById('canvasHudCoins').textContent = s.coins;
+                playCoinChime();
+              }
+            } else if (item.type === 'barrier') {
+              // Barrier can be jumped over! (If not jumping or jump too low, crash!)
+              if (runnerLane === item.lane && (!s.isJumping || s.jumpY < 32)) {
+                s.hasTriggered = true;
+                playCrashSnd();
+                setTimeout(triggerQuizModal, 350);
+              }
+            } else if (item.type === 'train') {
+              // Train CANNOT be jumped over! Must switch lane!
+              if (runnerLane === item.lane) {
+                s.hasTriggered = true;
+                playCrashSnd();
+                setTimeout(triggerQuizModal, 350);
+              }
+            } else if (item.type === 'quiz_gate') {
+              // KOTAK SOAL TEORI PYTHON: HANYA kena jika runner berada di jalur yang sama!
+              // Jika siswa geser ke kiri atau ke kanan menjauhi kotak soal, SISWA SELAMAT!
+              if (runnerLane === item.lane) {
+                s.hasTriggered = true;
+                playCrashSnd();
+                setTimeout(triggerQuizModal, 350);
+              }
+            }
+          }
+
+          if (item.z < -0.05) {
+            s.items.splice(i, 1);
+          }
+        }
+
+        // Spawning Track Items with authentic Subway Surfers spacing
+        s.spawnDist += s.speed;
+        if (s.spawnDist > 0.44) {
+          s.spawnDist = 0;
+
+          if (s.distance < 25) {
+            // FASE AWAL 0 - 25 METER: 100% KOIN AMAN! Bebas dari rintangan
+            const cLane = Math.floor(Math.random() * 3);
+            s.items.push({ id: s.nextId++, type: 'coin', lane: cLane, z: 1.0 });
+            s.items.push({ id: s.nextId++, type: 'coin', lane: (cLane + 1) % 3, z: 1.0 });
+          } else {
+            // SETELAH 25 METER: Rintangan & Kotak Soal muncul dari kejauhan (horizon z: 1.0)
+            const rand = Math.random();
+            const rLane = Math.floor(Math.random() * 3); // 0: Kiri, 1: Tengah, 2: Kanan
+            const otherLane1 = (rLane + 1) % 3;
+            const otherLane2 = (rLane + 2) % 3;
+
+            if (rand < 0.30) {
+              // Pattern 1: Pagar on 1 lane, 2 safe lanes with coins
+              s.items.push({ id: s.nextId++, type: 'barrier', lane: rLane, z: 1.0 });
+              s.items.push({ id: s.nextId++, type: 'coin', lane: otherLane1, z: 1.0 });
+              s.items.push({ id: s.nextId++, type: 'coin', lane: otherLane2, z: 1.0 });
+            } else if (rand < 0.55) {
+              // Pattern 2: Subway train on 1 lane, 2 safe lanes
+              s.items.push({ id: s.nextId++, type: 'train', lane: rLane, z: 1.0 });
+              s.items.push({ id: s.nextId++, type: 'coin', lane: otherLane1, z: 1.0 });
+            } else if (rand < 0.80) {
+              // Pattern 3: KOTAK SOAL TEORI PYTHON di 1 jalur (kiri, tengah, atau kanan)!
+              // Siswa bisa tabrak untuk mulai kuis, atau geser ke jalur lain agar selamat & terus lari!
+              s.items.push({ id: s.nextId++, type: 'quiz_gate', lane: rLane, z: 1.0 });
+              s.items.push({ id: s.nextId++, type: 'coin', lane: otherLane1, z: 1.0 });
+              s.items.push({ id: s.nextId++, type: 'coin', lane: otherLane2, z: 1.0 });
+            } else {
+              // Pattern 4: Coin stream
+              s.items.push({ id: s.nextId++, type: 'coin', lane: rLane, z: 1.0 });
+              s.items.push({ id: s.nextId++, type: 'coin', lane: otherLane1, z: 1.0 });
+            }
+          }
+        }
+      }
+
+      // RENDER GRAPHICS
+      // Sky
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+      skyGrad.addColorStop(0, '#1e293b');
+      skyGrad.addColorStop(0.5, '#334155');
+      skyGrad.addColorStop(1, '#f97316');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, horizonY);
+
+      // City Skyline
+      drawCitySkyline(ctx, w, horizonY);
+
+      // Ground Ballast
+      const groundGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+      groundGrad.addColorStop(0, '#475569');
+      groundGrad.addColorStop(0.3, '#334155');
+      groundGrad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, horizonY, w, h - horizonY);
+
+      // Subway Tracks & Rails (sleepers only move when running!)
+      drawTracksAndRails(ctx, s.runTick || 0, horizonX, horizonY, topSpread, bottomTrackLeft, bottomTrackRight, h);
+
+      // Overhead Tunnel Gantries
+      drawTunnelGantries(ctx, s.runTick || 0, w, horizonX, horizonY, h);
+
+      // Sort and Render Items (Back to Front: z: 1 -> 0)
+      const sorted = [...s.items].sort((a, b) => b.z - a.z);
+      for (const item of sorted) {
+        const itemX = getTrackLaneX(item.lane, item.z, horizonX, bottomTrackLeft, bottomSpread);
+        const itemY = horizonY + (h - horizonY) * Math.pow(1 - item.z, 1.4);
+        const scale = Math.max(0.15, Math.pow(1 - item.z, 1.2));
+
+        if (item.type === 'coin' && !item.collected) {
+          drawSubwayGoldCoin(ctx, itemX, itemY - 20 * scale, scale, s.runTick || s.tick);
+        } else if (item.type === 'barrier') {
+          drawTrackBarrier(ctx, itemX, itemY, scale);
+        } else if (item.type === 'train') {
+          drawSubwayTrainCar(ctx, itemX, itemY, scale, s.runTick || s.tick);
+        } else if (item.type === 'quiz_gate') {
+          drawQuestionGate(ctx, itemX, itemY, scale, s.runTick || s.tick);
+        }
+      }
+
+      // Runner Character at z = 0.05
+      const playerZ = 0.05;
+      const playerX = getTrackLaneX(s.laneX, playerZ, horizonX, bottomTrackLeft, bottomSpread);
+      const playerBaseY = horizonY + (h - horizonY) * Math.pow(1 - playerZ, 1.4);
+      const playerScale = 1.05;
+
+      drawSubwayRunnerChar(
+        ctx,
+        playerX,
+        playerBaseY - s.jumpY,
+        playerBaseY,
+        playerScale,
+        s.runTick || 0,
+        s.tick,
+        s.isJumping,
+        s.hasTriggered,
+        isGamePaused
+      );
+
+      animFrameId = requestAnimationFrame(runGameLoop);
+    }
+
+    function getTrackLaneX(lane, z, horizonX, bottomTrackLeft, bottomSpread) {
+      const scale = 1 - z;
+      const currentSpread = 50 + (bottomSpread - 50) * Math.pow(scale, 1.3);
+      const currentLeft = horizonX - currentSpread / 2;
+      const laneWidth = currentSpread / 3;
+      return currentLeft + laneWidth * (lane + 0.5);
+    }
+
+    function drawCitySkyline(ctx, w, horizonY) {
+      ctx.fillStyle = '#0f172a';
+      const count = 16;
+      const bWidth = w / count;
+      for (let i = 0; i < count; i++) {
+        const bHeight = 25 + ((i * 47) % 55);
+        ctx.fillRect(i * bWidth, horizonY - bHeight, bWidth + 1, bHeight);
+        if (i % 2 === 0) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(i * bWidth + 6, horizonY - bHeight + 10, 4, 4);
+          ctx.fillRect(i * bWidth + 14, horizonY - bHeight + 20, 4, 4);
+          ctx.fillStyle = '#0f172a';
+        }
+      }
+    }
+
+    function drawTracksAndRails(ctx, tick, horizonX, horizonY, topSpread, bottomTrackLeft, bottomTrackRight, h) {
+      // 3 Tracks = 4 Rails
+      const railCount = 4;
+      for (let r = 0; r < railCount; r++) {
+        const frac = r / (railCount - 1);
+        const topX = (horizonX - topSpread / 2) + topSpread * frac;
+        const botX = bottomTrackLeft + (bottomTrackRight - bottomTrackLeft) * frac;
+
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1 + frac * 2;
+        ctx.beginPath();
+        ctx.moveTo(topX, horizonY);
+        ctx.lineTo(botX, h);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(topX - 1, horizonY);
+        ctx.lineTo(botX - 1, h);
+        ctx.stroke();
+      }
+
+      // Wooden Railroad Ties (Sleepers) moving downward (stationary if tick === 0)
+      const tieCount = 14;
+      const speedOffset = tick > 0 ? ((tick * 0.0088 * 3.5) % 1) : 0;
+      for (let i = 0; i < tieCount; i++) {
+        const z = (i + speedOffset) / tieCount;
+        if (z < 0.05 || z > 0.98) continue;
+        const y = horizonY + (h - horizonY) * Math.pow(z, 1.4);
+        const spread = topSpread + (bottomTrackRight - bottomTrackLeft - topSpread) * Math.pow(z, 1.3);
+        const leftX = horizonX - spread / 2;
+
+        ctx.strokeStyle = '#78350f';
+        ctx.lineWidth = Math.max(2, 6 * z);
+        ctx.beginPath();
+        ctx.moveTo(leftX, y);
+        ctx.lineTo(leftX + spread, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawTunnelGantries(ctx, tick, w, horizonX, horizonY, h) {
+      const gantryCount = 3;
+      const offset = tick > 0 ? ((tick * 0.0088 * 0.8) % 1) : 0;
+      for (let i = 0; i < gantryCount; i++) {
+        const z = (i + offset) / gantryCount;
+        if (z < 0.1 || z > 0.95) continue;
+        const y = horizonY + (h - horizonY) * Math.pow(z, 1.4);
+        const spread = (w * 0.85) * Math.pow(z, 1.3);
+        const leftX = horizonX - spread / 2;
+        const gantryHeight = 120 * z;
+
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = Math.max(2, 5 * z);
+        ctx.beginPath();
+        ctx.moveTo(leftX, y);
+        ctx.lineTo(leftX, y - gantryHeight);
+        ctx.lineTo(leftX + spread, y - gantryHeight);
+        ctx.lineTo(leftX + spread, y);
+        ctx.stroke();
+
+        // Warning light
+        ctx.fillStyle = (tick % 30 < 15) ? '#ef4444' : '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(horizonX, y - gantryHeight, Math.max(2, 4 * z), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawSubwayGoldCoin(ctx, x, y, scale, tick) {
+      ctx.save();
+      ctx.translate(x, y);
+      const bobY = Math.sin(tick * 0.15) * 6 * scale;
+      const spinScaleX = Math.cos(tick * 0.12);
+      ctx.scale(spinScaleX * scale, scale);
+
+      // Gold Outer Ring
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath();
+      ctx.arc(0, bobY, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shiny Face
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.arc(0, bobY, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Python "Py" Logo on coin
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Py', 0, bobY);
+
+      ctx.restore();
+    }
+
+    function drawTrackBarrier(ctx, x, y, scale) {
+      ctx.save();
+      ctx.translate(x, y);
+      const barW = 75 * scale;
+      const barH = 32 * scale;
+
+      // Barrier Legs
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(-barW / 2 + 5 * scale, -barH, 6 * scale, barH);
+      ctx.fillRect(barW / 2 - 11 * scale, -barH, 6 * scale, barH);
+
+      // Striped Board
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(-barW / 2, -barH - 12 * scale, barW, 14 * scale);
+
+      // Yellow-Black Hazard Stripes
+      ctx.fillStyle = '#fde047';
+      const stripeW = 10 * scale;
+      for (let s = -barW / 2; s < barW / 2; s += stripeW * 2) {
+        ctx.beginPath();
+        ctx.moveTo(s, -barH - 12 * scale);
+        ctx.lineTo(s + stripeW, -barH - 12 * scale);
+        ctx.lineTo(s + stripeW - 4 * scale, -barH + 2 * scale);
+        ctx.lineTo(s - 4 * scale, -barH + 2 * scale);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawSubwayTrainCar(ctx, x, y, scale, tick) {
+      ctx.save();
+      ctx.translate(x, y);
+      const trainW = 75 * scale;
+      const trainH = 90 * scale;
+
+      // Train Body
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(-trainW / 2, -trainH, trainW, trainH);
+
+      // Train Roof
+      ctx.fillStyle = '#0369a1';
+      ctx.beginPath();
+      ctx.roundRect(-trainW / 2 - 2, -trainH - 8 * scale, trainW + 4, 10 * scale, 4);
+      ctx.fill();
+
+      // Front Windshield
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(-trainW / 2 + 8 * scale, -trainH + 10 * scale, trainW - 16 * scale, 30 * scale);
+
+      // Driver cabin glow
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.fillRect(-trainW / 2 + 10 * scale, -trainH + 12 * scale, trainW - 20 * scale, 26 * scale);
+
+      // Bright Headlights
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(-trainW / 2 + 14 * scale, -trainH + 54 * scale, 7 * scale, 0, Math.PI * 2);
+      ctx.arc(trainW / 2 - 14 * scale, -trainH + 54 * scale, 7 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Train Bumper
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(-trainW / 2, -14 * scale, trainW, 14 * scale);
+
+      ctx.restore();
+    }
+
+    function drawQuestionGate(ctx, x, y, scale, tick) {
+      ctx.save();
+      const boxW = 76 * scale;
+      const boxH = 68 * scale;
+      const drawX = x - boxW / 2;
+      const drawY = y - boxH;
+
+      // Floating bob animation
+      const bob = Math.sin(tick * 0.18) * 5 * scale;
+      const actualY = drawY + bob;
+
+      // Ground shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(x, y - 4 * scale, boxW * 0.55, 10 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Glowing cybernetic box body
+      const boxGrad = ctx.createLinearGradient(drawX, actualY, drawX + boxW, actualY + boxH);
+      boxGrad.addColorStop(0, '#f59e0b');
+      boxGrad.addColorStop(0.5, '#ea580c');
+      boxGrad.addColorStop(1, '#7c2d12');
+      ctx.fillStyle = boxGrad;
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(drawX, actualY, boxW, boxH, [10 * scale]);
+      } else {
+        ctx.rect(drawX, actualY, boxW, boxH);
+      }
+      ctx.fill();
+
+      // Neon glowing outline
+      const neonPulse = (Math.sin(tick * 0.25) + 1) / 2;
+      ctx.strokeStyle = neonPulse > 0.5 ? '#fef08a' : '#38bdf8';
+      ctx.lineWidth = 3.5 * scale;
+      ctx.stroke();
+
+      // Tech corner brackets
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2 * scale;
+      const cr = 8 * scale;
+      ctx.beginPath();
+      ctx.moveTo(drawX + 4 * scale, actualY + 4 * scale + cr);
+      ctx.lineTo(drawX + 4 * scale, actualY + 4 * scale);
+      ctx.lineTo(drawX + 4 * scale + cr, actualY + 4 * scale);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(drawX + boxW - 4 * scale - cr, actualY + 4 * scale);
+      ctx.lineTo(drawX + boxW - 4 * scale, actualY + 4 * scale);
+      ctx.lineTo(drawX + boxW - 4 * scale, actualY + 4 * scale + cr);
+      ctx.stroke();
+
+      // Inner Mystery Question Mark
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.max(14, Math.floor(26 * scale))}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('❓', x, actualY + boxH * 0.46);
+
+      // Floating Hologram Header above box: "[ ⚡SOAL PYTHON⚡ ]"
+      const tagW = 96 * scale;
+      const tagH = 18 * scale;
+      const tagX = x - tagW / 2;
+      const tagY = actualY - 24 * scale;
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(tagX, tagY, tagW, tagH, [4 * scale]);
+      } else {
+        ctx.rect(tagX, tagY, tagW, tagH);
+      }
+      ctx.fill();
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 1.5 * scale;
+      ctx.stroke();
+
+      ctx.fillStyle = '#fde047';
+      ctx.font = `bold ${Math.max(7, Math.floor(8 * scale))}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('⚡SOAL PYTHON⚡', x, tagY + tagH / 2);
+
+      ctx.restore();
+    }
+
+    function drawSubwayRunnerChar(ctx, x, y, baseY, scale, runTick, idleTick, isJumping, hasTriggered, isPaused) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+
+      // Shadow on the ballast ground
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(0, baseY - y + 2, 22, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const isActuallyRunning = !isPaused && !hasTriggered;
+
+      // Running cycle leg swings (hanya saat aktif berlari sesudah GO!)
+      const runCycle = isActuallyRunning ? Math.sin(runTick * 0.28) : 0;
+      const leftLegAngle = isJumping ? 0.35 : (isActuallyRunning ? runCycle * 0.45 : 0);
+      const rightLegAngle = isJumping ? -0.35 : (isActuallyRunning ? -runCycle * 0.45 : 0);
+
+      // Gerak nafas halus saat standby sebelum GO
+      let bobY = 0;
+      if (!isActuallyRunning && !hasTriggered && !isJumping) {
+        bobY = Math.sin(idleTick * 0.08) * 1.5;
+      }
+
+      // Legs / Denim Pants
+      ctx.strokeStyle = '#1e3a8a';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+
+      // Left Leg
+      ctx.beginPath();
+      ctx.moveTo(-7, -26 + bobY);
+      ctx.lineTo(-7 + Math.sin(leftLegAngle) * 20, bobY);
+      ctx.stroke();
+
+      // Right Leg
+      ctx.beginPath();
+      ctx.moveTo(7, -26 + bobY);
+      ctx.lineTo(7 + Math.sin(rightLegAngle) * 20, bobY);
+      ctx.stroke();
+
+      // Red Sneakers
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(-7 + Math.sin(leftLegAngle) * 20, 1 + bobY, 5, 0, Math.PI * 2);
+      ctx.arc(7 + Math.sin(rightLegAngle) * 20, 1 + bobY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hoodie / Body (Subway Surfer Teal & Orange)
+      ctx.fillStyle = hasTriggered ? '#f97316' : '#0284c7';
+      ctx.beginPath();
+      ctx.roundRect(-15, -55 + bobY, 30, 32, 6);
+      ctx.fill();
+
+      // Hoodie Zipper
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -55 + bobY);
+      ctx.lineTo(0, -25 + bobY);
+      ctx.stroke();
+
+      // Arms swing (or relaxed ready at sides before GO!)
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-14, -50 + bobY);
+      ctx.lineTo(-14 - Math.sin(leftLegAngle) * 15, -34 + bobY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(14, -50 + bobY);
+      ctx.lineTo(14 + Math.sin(leftLegAngle) * 15, -34 + bobY);
+      ctx.stroke();
+
+      // Head (Facing away, backward view like Subway Surfers)
+      ctx.fillStyle = '#ffedd5';
+      ctx.beginPath();
+      ctx.arc(0, -68 + bobY, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cap / Hair (Backward Red Cap)
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(0, -70 + bobY, 13, Math.PI, 0);
+      ctx.fill();
+
+      // Cap Visor facing backward
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(-7, -72, 14, 4);
+
+      // Jetpack / Backpack
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.roundRect(-10, -50, 20, 18, 4);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // -----------------------------------------------------------------
+    // 5. APP CONTROLLER & MODAL WORKFLOW
+    // -----------------------------------------------------------------
+    let currentStudentName = '';
+    let currentQuestion = null;
+    let currentCoinsCollected = 0;
+    let isGamePaused = false;
+    let countdownTimers = [];
+
+    function startCountdownSequence(name) {
+      countdownTimers.forEach(t => clearTimeout(t));
+      countdownTimers = [];
+
+      isGamePaused = true; // PAUSE during countdown
+      const overlay = document.getElementById('countdownOverlay');
+      const studentNameEl = document.getElementById('countdownStudentName');
+      const numEl = document.getElementById('countdownNumber');
+      const glowEl = document.getElementById('countdownGlow');
+      const hintEl = document.getElementById('countdownHint');
+
+      studentNameEl.textContent = name;
+      overlay.classList.remove('hidden');
+
+      // Stage 1: "3" (0ms)
+      numEl.textContent = '3';
+      numEl.className = 'relative font-retro font-black tracking-wider transition-transform drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] text-6xl sm:text-8xl md:text-9xl text-rose-500 drop-shadow-[0_0_35px_rgba(244,63,94,0.95)]';
+      glowEl.className = 'absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full blur-2xl opacity-75 animate-ping bg-rose-500';
+      hintEl.textContent = 'Panah Keyboard (Laptop) atau Sentuh Tombol Layar (Smartboard)';
+      playCountdownBeepSnd(3);
+
+      // Stage 2: "2" (+900ms)
+      countdownTimers.push(setTimeout(() => {
+        numEl.textContent = '2';
+        numEl.className = 'relative font-retro font-black tracking-wider transition-transform drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] text-6xl sm:text-8xl md:text-9xl text-yellow-300 drop-shadow-[0_0_35px_rgba(253,224,71,0.95)]';
+        glowEl.className = 'absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full blur-2xl opacity-75 animate-ping bg-yellow-400';
+        playCountdownBeepSnd(2);
+      }, 900));
+
+      // Stage 3: "1" (+1800ms)
+      countdownTimers.push(setTimeout(() => {
+        numEl.textContent = '1';
+        numEl.className = 'relative font-retro font-black tracking-wider transition-transform drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] text-6xl sm:text-8xl md:text-9xl text-cyan-300 drop-shadow-[0_0_35px_rgba(103,232,249,0.95)]';
+        glowEl.className = 'absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full blur-2xl opacity-75 animate-ping bg-cyan-400';
+        playCountdownBeepSnd(1);
+      }, 1800));
+
+      // Stage 4: "GO!" (+2700ms)
+      countdownTimers.push(setTimeout(() => {
+        numEl.textContent = 'GO!';
+        numEl.className = 'relative font-retro font-black tracking-wider transition-transform drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] text-5xl sm:text-7xl md:text-8xl text-emerald-400 scale-110 drop-shadow-[0_0_35px_rgba(52,211,153,0.95)]';
+        glowEl.className = 'absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full blur-2xl opacity-75 animate-ping bg-emerald-500';
+        hintEl.innerHTML = '<span class="text-emerald-300 font-bold">⚡ LARI & HINDARI RINTANGAN SEKARANG!</span>';
+        playCountdownBeepSnd('GO');
+        playSubwayHornSnd();
+        isGamePaused = false; // UNPAUSE GAMEPLAY!
+      }, 2700));
+
+      // Stage 5: Hide overlay (+3500ms)
+      countdownTimers.push(setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 3500));
+    }
+
+    // Mengacak opsi jawaban A, B, C, D sehingga jawaban benar terdistribusi secara acak dan adil
+    function getRandomizedQuestion(raw) {
+      const originalCorrectText = raw.options[raw.correctIndex];
+      const shuffledOptions = [...raw.options];
+      for (let i = shuffledOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = shuffledOptions[i];
+        shuffledOptions[i] = shuffledOptions[j];
+        shuffledOptions[j] = temp;
+      }
+      const newCorrectIndex = shuffledOptions.indexOf(originalCorrectText);
+      return {
+        ...raw,
+        options: shuffledOptions,
+        correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0
+      };
+    }
+
+    // Handle Manual Name Form Submission
+    function handleStartTurnForm(e) {
+      e.preventDefault();
+      const input = document.getElementById('studentNameInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      currentStudentName = name;
+      sessionCount++;
+      try {
+        localStorage.setItem(SESSION_KEY, sessionCount.toString());
+      } catch {}
+      document.getElementById('sessionCounterText').textContent = sessionCount + ' Siswa';
+
+      // Pick an easy question from question bank & acak opsi (A, B, C, D)
+      const randIdx = Math.floor(Math.random() * QUESTIONS_BANK.length);
+      currentQuestion = getRandomizedQuestion(QUESTIONS_BANK[randIdx]);
+
+      // Switch View to Gameplay
+      document.getElementById('viewNameInput').classList.add('hidden');
+      document.getElementById('viewGameplay').classList.remove('hidden');
+
+      initCanvasGame();
+      resetSubwayGame(name);
+
+      // Start 3-2-1-GO Countdown before running!
+      startCountdownSequence(name);
+    }
+
+    // Triggered when hitting an obstacle or reaching the Quiz Gate
+    function triggerQuizModal() {
+      isGamePaused = true;
+      document.getElementById('questionModal').classList.remove('hidden');
+
+      if (!currentQuestion) {
+        currentQuestion = QUESTIONS_BANK[0];
+      }
+
+      document.getElementById('modalCategoryBadge').textContent = currentQuestion.categoryTitle;
+      document.getElementById('modalCoinsCollected').textContent = currentCoinsCollected;
+      document.getElementById('modalQuestionText').textContent = currentQuestion.question;
+
+      const codeBox = document.getElementById('modalCodeSnippetBox');
+      const codeText = document.getElementById('modalCodeSnippetText');
+      if (currentQuestion.codeSnippet) {
+        codeBox.classList.remove('hidden');
+        codeText.textContent = currentQuestion.codeSnippet;
+      } else {
+        codeBox.classList.add('hidden');
+      }
+
+      // Hide feedback box
+      document.getElementById('modalFeedbackBox').classList.add('hidden');
+
+      // Render Options A, B, C, D (Large touch targets)
+      const container = document.getElementById('modalOptionsContainer');
+      container.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      currentQuestion.options.forEach((optText, optIdx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-full p-4 sm:p-5 rounded-2xl border-4 border-amber-300 bg-amber-50 hover:bg-amber-100 hover:border-amber-500 text-slate-900 font-bold text-left text-sm sm:text-base shadow-md active:scale-95 transition-all flex items-start gap-3 cursor-pointer';
+        btn.innerHTML = `
+          <span class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-retro text-xs sm:text-sm shrink-0 shadow">
+            ${letters[optIdx]}
+          </span>
+          <span class="leading-snug pt-0.5">${optText}</span>
+        `;
+        btn.onclick = () => handleSelectAnswer(optIdx);
+        container.appendChild(btn);
+      });
+    }
+
+    // Handle Option Selection
+    function handleSelectAnswer(selectedIdx) {
+      const isCorrect = (selectedIdx === currentQuestion.correctIndex);
+      const scoreFromQuestion = isCorrect ? 100 : 0;
+      const coinScore = currentCoinsCollected * 10;
+      const totalScore = scoreFromQuestion + coinScore;
+
+      // Disable option buttons
+      const buttons = document.querySelectorAll('#modalOptionsContainer button');
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.remove('hover:bg-amber-100', 'hover:border-amber-500', 'cursor-pointer');
+        if (idx === currentQuestion.correctIndex) {
+          btn.className = 'w-full p-4 sm:p-5 rounded-2xl border-4 border-emerald-500 bg-emerald-100 text-emerald-950 font-bold text-left text-sm sm:text-base shadow flex items-start gap-3';
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.className = 'w-full p-4 sm:p-5 rounded-2xl border-4 border-rose-500 bg-rose-100 text-rose-950 font-bold text-left text-sm sm:text-base shadow flex items-start gap-3';
+        } else {
+          btn.classList.add('opacity-40');
+        }
+      });
+
+      // Show Feedback Box
+      const feedbackBox = document.getElementById('modalFeedbackBox');
+      const feedbackTitle = document.getElementById('modalFeedbackTitle');
+      const scoreEarned = document.getElementById('modalScoreEarned');
+      const explanation = document.getElementById('modalExplanationText');
+
+      feedbackBox.classList.remove('hidden');
+
+      if (isCorrect) {
+        playCorrectFanfare();
+        confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
+        feedbackBox.className = 'p-4 rounded-2xl border-2 border-emerald-400 bg-emerald-50 text-emerald-950 space-y-2 animate-modal';
+        feedbackTitle.innerHTML = '<span>🎉 JAWABAN BENAR! LUAR BIASA!</span>';
+        scoreEarned.className = 'font-retro text-xs sm:text-sm font-bold text-emerald-700';
+        scoreEarned.textContent = `+100 POIN (${totalScore} Total)`;
+      } else {
+        playWrongBuzzer();
+        feedbackBox.className = 'p-4 rounded-2xl border-2 border-rose-400 bg-rose-50 text-rose-950 space-y-2 animate-modal';
+        feedbackTitle.innerHTML = '<span>❌ JAWABAN KURANG TEPAT! TETAP SEMANGAT!</span>';
+        scoreEarned.className = 'font-retro text-xs sm:text-sm font-bold text-rose-700';
+        scoreEarned.textContent = `+0 POIN (${coinScore} Poin Koin)`;
+      }
+
+      explanation.textContent = currentQuestion.explanation;
+
+      // Save to Leaderboard (Safe in LocalStorage)
+      addScoreToLeaderboard(
+        currentStudentName,
+        totalScore,
+        currentCoinsCollected,
+        isCorrect,
+        currentQuestion.question,
+        currentQuestion.categoryTitle
+      );
+    }
+
+    // Next Student Button clicked -> Return to Name Input Screen
+    function handleNextStudentClick() {
+      countdownTimers.forEach(t => clearTimeout(t));
+      countdownTimers = [];
+      const overlay = document.getElementById('countdownOverlay');
+      if (overlay) overlay.classList.add('hidden');
+
+      document.getElementById('questionModal').classList.add('hidden');
+      document.getElementById('viewGameplay').classList.add('hidden');
+      document.getElementById('viewNameInput').classList.remove('hidden');
+
+      // Reset Form for next student
+      const input = document.getElementById('studentNameInput');
+      input.value = '';
+      input.focus();
+    }
+
+    // Leaderboard Modal Control
+    function openLeaderboardModal() {
+      renderLeaderboardUI();
+      document.getElementById('leaderboardModal').classList.remove('hidden');
+    }
+
+    function closeLeaderboardModal() {
+      document.getElementById('leaderboardModal').classList.add('hidden');
+    }
+
+    function renderLeaderboardUI() {
+      const entries = getStoredLeaderboard();
+      // Sort by score desc, then coins desc
+      const sorted = [...entries].sort((a, b) => b.score - a.score || (b.coinsCollected || 0) - (a.coinsCollected || 0));
+
+      document.getElementById('lbTotalCount').textContent = sorted.length;
+      const tbody = document.getElementById('leaderboardTableBody');
+      tbody.innerHTML = '';
+
+      if (sorted.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center text-slate-400 text-xs italic">
+              Belum ada riwayat siswa. Jadilah siswa pertama yang bermain!
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      sorted.forEach((e, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = idx < 3 ? 'bg-amber-50/60 font-semibold' : 'hover:bg-slate-50';
+
+        let medalBadge = `${idx + 1}`;
+        if (idx === 0) medalBadge = '🥇';
+        else if (idx === 1) medalBadge = '🥈';
+        else if (idx === 2) medalBadge = '🥉';
+
+        tr.innerHTML = `
+          <td class="p-3 text-center text-sm font-bold">${medalBadge}</td>
+          <td class="p-3 font-bold text-slate-900">${e.studentName}</td>
+          <td class="p-3 text-center text-yellow-600 font-bold">🪙 ${e.coinsCollected || 0}</td>
+          <td class="p-3 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${e.isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+              ${e.isCorrect ? '✓ Benar' : '✕ Salah'}
+            </span>
+          </td>
+          <td class="p-3 text-right font-retro text-xs sm:text-sm text-orange-600 font-black">${e.score}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // Material Theory Cheat Sheet Tab Controller
+    // -----------------------------------------------------------------
+    let currentCheatSheetTab = 'konsep';
+    function switchCheatSheetTab(tab) {
+      currentCheatSheetTab = tab;
+      const tabs = ['konsep', 'print', 'tipe_data', 'kisi_kisi'];
+      
+      tabs.forEach(t => {
+        const btn = document.getElementById('csTabBtn_' + t);
+        const content = document.getElementById('csTabContent_' + t);
+        
+        if (t === tab) {
+          if (content) content.classList.remove('hidden');
+          if (btn) {
+            btn.className = 'px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md ' +
+              (t === 'konsep' ? 'bg-orange-600 text-white' :
+               t === 'print' ? 'bg-amber-500 text-slate-950' :
+               t === 'tipe_data' ? 'bg-emerald-600 text-white' :
+               'bg-purple-600 text-white');
+          }
+        } else {
+          if (content) content.classList.add('hidden');
+          if (btn) {
+            btn.className = 'px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer bg-white text-slate-700 hover:bg-slate-200 border border-slate-200';
+          }
+        }
+      });
+    }
+
+    function openCheatSheetModal() {
+      document.getElementById('cheatSheetModal').classList.remove('hidden');
+    }
+
+    function closeCheatSheetModal() {
+      document.getElementById('cheatSheetModal').classList.add('hidden');
+    }
+
+    // -----------------------------------------------------------------
+    // Bank Soal Modal Controller (37 Soal Lengkap)
+    // -----------------------------------------------------------------
+    let bankSelectedCategory = 'all';
+    let bankSearchQuery = '';
+
+    function openQuestionBankModal() {
+      document.getElementById('questionBankModal').classList.remove('hidden');
+      renderQuestionBankList();
+    }
+
+    function closeQuestionBankModal() {
+      document.getElementById('questionBankModal').classList.add('hidden');
+    }
+
+    function setBankCategory(cat) {
+      bankSelectedCategory = cat;
+      const cats = ['all', 'konsep', 'print', 'tipe_data'];
+      
+      cats.forEach(c => {
+        const btn = document.getElementById('bankCatBtn_' + c);
+        if (!btn) return;
+        if (c === cat) {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shadow-sm text-white ' +
+            (c === 'all' ? 'bg-amber-600' :
+             c === 'konsep' ? 'bg-orange-600' :
+             c === 'print' ? 'bg-amber-500 text-slate-950' :
+             'bg-emerald-600');
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer bg-white hover:bg-slate-200 text-slate-700 border border-slate-200';
+        }
+      });
+
+      renderQuestionBankList();
+    }
+
+    function handleBankSearch(query) {
+      bankSearchQuery = (query || '').toLowerCase().trim();
+      renderQuestionBankList();
+    }
+
+    function renderQuestionBankList() {
+      const listContainer = document.getElementById('bankQuestionsList');
+      if (!listContainer) return;
+
+      const filtered = QUESTIONS_BANK.filter(q => {
+        const matchCat = (bankSelectedCategory === 'all') || 
+                         (q.category === bankSelectedCategory) ||
+                         (bankSelectedCategory === 'konsep' && q.id >= 1 && q.id <= 7) ||
+                         (bankSelectedCategory === 'print' && q.id >= 8 && q.id <= 16) ||
+                         (bankSelectedCategory === 'tipe_data' && q.id >= 17 && q.id <= 37);
+        if (!matchCat) return false;
+
+        if (!bankSearchQuery) return true;
+        const qText = q.question.toLowerCase();
+        const catText = (q.categoryTitle || '').toLowerCase();
+        const codeText = (q.codeSnippet || '').toLowerCase();
+        const optText = q.options.join(' ').toLowerCase();
+        const expText = (q.explanation || '').toLowerCase();
+
+        return qText.includes(bankSearchQuery) ||
+               catText.includes(bankSearchQuery) ||
+               codeText.includes(bankSearchQuery) ||
+               optText.includes(bankSearchQuery) ||
+               expText.includes(bankSearchQuery);
+      });
+
+      const footerCount = document.getElementById('bankFooterCount');
+      if (footerCount) {
+        footerCount.innerHTML = `✅ Menampilkan <strong>${filtered.length}</strong> dari <strong>${QUESTIONS_BANK.length}</strong> soal teori Python SMA Kelas 10`;
+      }
+
+      listContainer.innerHTML = '';
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-12 text-center text-slate-400 space-y-2">
+            <div class="text-4xl">🔍</div>
+            <p class="font-bold text-sm text-slate-600">Tidak ada soal yang cocok dengan pencarian.</p>
+            <p class="text-xs">Coba kata kunci lain atau pilih tab kategori 'Semua'.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const letters = ['A', 'B', 'C', 'D'];
+
+      filtered.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'bg-white border-2 border-slate-200 hover:border-amber-400 rounded-2xl p-4 sm:p-5 shadow-sm transition-all hover:shadow-md space-y-3';
+
+        const codeHtml = q.codeSnippet ? `
+          <div class="bg-slate-950 text-amber-300 font-mono text-xs p-3 rounded-xl border border-slate-800 shadow-inner overflow-x-auto">
+            <span class="text-emerald-400 mr-2">&gt;&gt;&gt;</span>${escapeHtml(q.codeSnippet)}
+          </div>
+        ` : '';
+
+        const optionsHtml = q.options.map((opt, optIdx) => {
+          const isCorrect = (optIdx === q.correctIndex);
+          return `
+            <div class="p-2.5 rounded-xl text-xs font-medium border flex items-start gap-2.5 transition-colors ${
+              isCorrect
+                ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-bold shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700'
+            }">
+              <span class="w-5 h-5 rounded-md flex items-center justify-center font-black text-[10px] shrink-0 ${
+                isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+              }">
+                ${letters[optIdx]}
+              </span>
+              <span class="leading-tight flex-1">${escapeHtml(opt)}</span>
+              ${isCorrect ? `
+                <span class="text-[10px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
+                  ✓ Benar
+                </span>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black font-retro text-[10px] flex items-center justify-center shadow-sm">
+                #${q.id}
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                ${escapeHtml(q.categoryTitle)}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onclick="copyBankQuestion(${q.id}, this)"
+              class="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-amber-700 bg-slate-100 hover:bg-amber-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              title="Salin soal ini"
+            >
+              <span>📋 Salin Soal</span>
+            </button>
+          </div>
+
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">
+            ${escapeHtml(q.question)}
+          </h3>
+
+          ${codeHtml}
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            ${optionsHtml}
+          </div>
+
+          <div class="bg-amber-50/80 border-l-4 border-amber-400 p-3 rounded-r-xl text-xs text-slate-700 leading-relaxed">
+            <strong class="text-amber-950 font-bold">💡 Pembahasan: </strong>
+            ${escapeHtml(q.explanation)}
+          </div>
+        `;
+
+        listContainer.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function copyBankQuestion(id, btnElement) {
+      const q = QUESTIONS_BANK.find(item => item.id === id);
+      if (!q) return;
+
+      const letters = ['A', 'B', 'C', 'D'];
+      const text = `[Soal #${q.id} - ${q.categoryTitle}]\n${q.question}\n${q.codeSnippet ? `Kode:\n${q.codeSnippet}\n` : ''}Pilihan:\nA. ${q.options[0]}\nB. ${q.options[1]}\nC. ${q.options[2]}\nD. ${q.options[3]}\n\nKunci Jawaban: ${letters[q.correctIndex]} (${q.options[q.correctIndex]})\nPembahasan: ${q.explanation}`;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+
+      if (btnElement) {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = `<span class="text-emerald-700 font-bold">✓ Tersalin!</span>`;
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+        }, 1800);
+      }
+    }
+
+    // Initial Load Setup
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('sessionCounterText').textContent = sessionCount + ' Siswa';
+      updateSpeedButtonsUI();
+      renderQuestionBankList();
+    });
+  </script>
+</body>
+</html>

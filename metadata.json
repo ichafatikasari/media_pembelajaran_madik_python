@@ -1,0 +1,6 @@
+{
+  "name": "Python Mario Quiz",
+  "description": "Game edukasi platformer 2D ala Mario interaktif untuk proyektor kelas SMA Kelas 10, aturan 1 siswa 1 soal teori dasar Python, dilengkapi sistem absen dan papan peringkat aman.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
